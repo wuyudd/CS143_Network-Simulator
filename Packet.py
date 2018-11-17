@@ -1,12 +1,6 @@
-class Packet(Object):
-    ID=""
-    type=""
-    size=0
-    end1=""
-    end2=""
 
-
-    def __init__(self,ID,type,size,end1,end2):
+class Packet(object):
+    def __init__(self, ID, type, size, end1, end2):
         self.ID =ID
         self.type=type
         self.size=size
@@ -23,10 +17,10 @@ class Packet(Object):
         return self.size
 
     def getend1(self):
-        return end1
+        return self.end1
 
     def getend2(self):
-        return end2
+        return self.end2
 
 
 

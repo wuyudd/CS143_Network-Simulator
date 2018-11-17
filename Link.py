@@ -1,46 +1,21 @@
-class Links(object):
-	def __init__(self,identity,start,dest,length,buffersize,method,minthreshold,maxthreshold):
-		self.twoend = (start,dest)
-		self.buffer = collections.deque()
-		self.size = buffersize
-		self.linkid = identity
-		self.linklen = length
-		self.method = method
-		self.averagequeuelength = 0
-		self.minthreshold = minthreshold
-		self.maxthreshold = maxthreshold
-
-	def getLinkLen(self):
-		return self.linklen
-
-	def getLinkId(self):
-		return self.linkid
-
-	def getTwoEnd(self):
-		return self.twoend
-
-	def getBufferSize(self):
-		return self.size
-
-	def getCurrentBufferSize(self):
-		return len(self.buffer)
-
-	def addPacketToLink(self,packetId):
-		if self.method == 'RED':
-			return False
-
-		elif self.method == 'DropTail':
-			if l
-				en(self.buffer) == self.size():
-				return
-			self.buffer.append(packetId)
+from packet import Packet
+import time
+import collections
 
 
-
-
-
-
-
-
-
-
+class Link(object):
+    def __init__(self, buffer_in_size, buffer_out_size, delay):
+        self.__delay = delay
+        self.__buffer_in = collections.deque(maxlen=buffer_in_size)
+        self.__buffer_out = collections.deque(maxlen=buffer_out_size)
+        
+    def add_pkg_to_buffer_in(self, pkg):
+        self.__buffer_in.append(pkg)
+        
+    def transmit(self):
+        pkg = self.__buffer_in.pop()
+        time.sleep(self.__delay)
+        self.__buffer_out.append(pkg)
+        
+    def pick_pkg_from_buffer_out(self):
+        return self.__buffer_out.pop()
