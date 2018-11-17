@@ -1,4 +1,3 @@
-from packet import Packet
 import time
 import collections
 

@@ -1,4 +1,3 @@
-
 class Packet(object):
     def __init__(self, ID, type, size, end1, end2):
         self.ID =ID
