@@ -15,6 +15,8 @@ class Link(object):
         pkg = self.__buffer_in.pop()
         time.sleep(self.__delay)
         self.__buffer_out.append(pkg)
+        # 激活 link to host 的event
+        # event push
         
     def pick_pkg_from_buffer_out(self):
         return self.__buffer_out.pop()
