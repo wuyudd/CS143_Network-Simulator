@@ -1,6 +1,15 @@
 class Event(object):
-    def __init__(self, start_time, act_ele, event_action, carrying):
-        self.start_time start_time
-        self.act_ele = act_ele
-        self.event_action = event_action
-        self.carrying = carrying
+
+    def __init__(self):
+        self.start_time = 0.0
+
+    def event_action(self):
+        pass
+
+    def set_start_time(self, time):
+        self.start_time = time
+        return
+
+    def get_start_time(self):
+        return self.start_time
+
