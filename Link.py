@@ -1,4 +1,6 @@
-import  collections
+import collections
+
+
 class Link(object):
     def __init__(self, id, transmission_delay, propagation_delay, buffer_size, start, end):
         self.id = id
