@@ -1,7 +1,4 @@
-import time
-import collections
-
-
+import  collections
 class Link(object):
     def __init__(self, id, transmission_delay, propagation_delay, buffer_size, start, end):
         self.id = id
@@ -23,3 +20,4 @@ class Link(object):
 
     def pick_pkg_from_link(self):
         return self.on_the_link.popleft()
+
