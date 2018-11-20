@@ -1,14 +1,13 @@
+from Node import Node
 
-class Host(object):
+
+class Host(Node):
     def __init__(self, host_ipaddr, connected_link):
-        self.__id = host_ipaddr
-        self.__link = connected_link
+        self.id = host_ipaddr
+        super().__init__(connected_link)
 
     def send(self, to_send_pkt):
-        self.__link.add_pkg_to_buffer_in(to_send_pkt)
-
-        #激活一个link to link的event
-        #event push
+        self.links.add_pkg_to_buffer_in(to_send_pkt)
 
     def receive(self):
-        return self.__link.pick_pkg_from_buffer_out()
+        return self.links.pick_pkg_from_buffer_out()
