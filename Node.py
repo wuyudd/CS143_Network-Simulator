@@ -1,3 +1,5 @@
 class Node(object):
-    def __init__(self, links):
-        self.links = links
+    def __init__(self, id):
+        self.links = []
+        self.id = id
+
