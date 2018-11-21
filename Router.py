@@ -1,9 +1,9 @@
 import collections
-from Link import Link
-from Packet import Packet
+import global_var
+from link import *
+from packet import *
+from node import *
 
-
-from Node import Node
 
 class Router(Node):
     def __init__(self, router_id):

@@ -1,35 +1,51 @@
-from Router import Router
-from Link import Link
-from Host import Host
-from Node import Node
+from router import *
+from link import *
+from host import *
+from node import *
+from flow import *
 import heapq
-import EventType
+import event_type
+import global_var
 
 
-class Simulator():
+
+class Simulator(object):
     queue = []
     timestamp = 0.0
-    flow = {}
 
     def __init__(self):
         self.node = {}
         self.links = {}
         self.flow = {}
-        self.queue = []
-        self.timestamp = 0.0
+
+    @staticmethod
+    def get_queue():
+        return global_var.queue
+
+    @staticmethod
+    def get_timestamp():
+        return global_var.timestamp
 
     def run(self):
-        # node, links = self.build_graph()
-        flow = self.import_flow()
+        node, links = self.build_graph('test1.txt')
+        print(node)
+        print(links)
+        H1 = node['H1']
+        H2 = node['H2']
+
+        f = Flow('F1', H1, H2, 1024, 1, 1024)
+
+        #flow = self.import_flow()
 
         # deal with the flow, add event to queue
-        for f in flow:
-            event_temp = EventType.FlowInitialize(f, f.start_time)
-            heapq.heappush(Simulator.queue, (f.start_time, event_temp))
+        #for f in flow:
+        event_temp = event_type.FlowInitialize(f, f.start_time)
+        heapq.heappush(global_var.queue, (f.start_time, event_temp))
+        print(global_var.queue)
 
-        while Simulator.queue:
-            event = heapq.heappop(Simulator.queue)
-            event.action()
+        while global_var.queue:
+            event = heapq.heappop(global_var.queue)
+            event[1].action()
 
     def import_flow(self):
         return self
@@ -39,6 +55,7 @@ class Simulator():
         i = 1
         node = {}
         links = {}
+
         # print(data)
         # read host
         while i < len(data) and data[i] != '#':
@@ -77,3 +94,4 @@ class Simulator():
             links[cur[0] + '*'].start = node[cur[2]]
             links[cur[0] + '*'].end = node[cur[1]]
             i += 1
+        return node, links

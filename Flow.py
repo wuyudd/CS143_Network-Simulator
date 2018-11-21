@@ -1,8 +1,9 @@
 import heapq
-from Host import Host
-from Packet import Packet
-from Simulator import Simulator
-import EventType
+import global_var
+from host import *
+from packet import *
+from simulator import *
+import event_type
 
 
 class Flow(object):
@@ -17,34 +18,38 @@ class Flow(object):
         self.packet_size = packet_size
         self.pkt_pool = {}
 
-
     def generate_packet(self):
-        number_of_packet = self.size/self.packet_size
+        number_of_packet = int(self.size/self.packet_size)
         prefix = 'pkt'
         for i in range(number_of_packet):
+            # pkt: id, type, size, end1, end2, pos
             self.pkt_pool[prefix+str(i)] = Packet(self.id+prefix+str(i), 'data', self.packet_size, self.src, self.dest)
+            print(self.pkt_pool)
         return
 
     def send_packet(self,pkt):
-        self.src.send_packet()
+        self.src.send_packet(pkt)
         self.cnt+=1
-        event = EventType.TimeOut(pkt,Simulator.timestamp+*****constanttime)
-        heapq.heappush(Simulator.queue,(Simulator.timestamp+*****constanttime, event))
+        event = event_type.TimeOut(pkt, self, global_var.timestamp+1) # constant need to be modified
+        heapq.heappush(global_var.queue, (global_var.timestamp+1, event))
         return
 
-    def receive_ack(self,ack):
-        self.pkt_pool.get(ack.pos).set_ack(1)  #find the packet and mark it acknowledged
+    def receive_ack(self, ack):
+        l = ack.id.split('pkt')
+        name = 'pkt'+l[1]
+        self.pkt_pool[name].set_ack(1)  # find the packet and mark it acknowledged
         self.cnt-=1
 
     def add_event(self):   # start_time & index modify
-        while self.cnt<=self.window_size:
-            index = 1
-            start_time = 1.0
-            event = EventType.send_from_flow(self, index, start_time)
-            heapq.heappush(Simulator.queue, (start_time, event))
+        #while self.cnt <= self.window_size:
+        index = 0
+        start_time = 1.0
+        event = event_type.SendFromFlow(self, index, start_time)
+        heapq.heappush(global_var.queue, (start_time, event))
+            #self.cnt += 1
 
     def time_out(self, pkt):
         if pkt.get_ack()==0:
-            self.cnt -= 1   #need to resend pck
+            self.cnt -= 1   # need to resend pck
 
 

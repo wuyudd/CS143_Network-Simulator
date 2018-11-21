@@ -3,6 +3,9 @@ class Event(object):
     def __init__(self):
         self.start_time = 0.0
 
+    def __lt__(self, other):
+        return self.start_time < other.start_time
+
     def event_action(self):
         pass
 

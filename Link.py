@@ -1,8 +1,9 @@
 import collections
 import heapq
-from Simulator import Simulator
-from Event import Event
-import EventType
+import global_var
+from simulator import *
+from event import *
+import event_type
 
 
 class Link(object):
@@ -23,13 +24,13 @@ class Link(object):
             # t = length_of_queue * packet_size/link_rate
             # t is in second
             # cur_event is a new event to move packet from buffer to link
-            cur_event = EventType.FetchFromBuffer(self, Simulator.timestamp+len(self.buffer)*8/(self.link_rate*1024))
-            heapq.heappush(Simulator.queue, (Simulator.timestamp, cur_event))
+            cur_event = event_type.FetchFromBuffer(self, global_var.timestamp+len(self.buffer)*8/(self.link_rate*1024))
+            heapq.heappush(global_var.queue, (global_var.timestamp, cur_event))
 
     def buffer_to_link(self):
-        cur_event = EventType.FetchFromLink(self, Simulator.timestamp+self.link_delay)
-        heapq.heappush(Simulator.queue, (Simulator.timestamp, cur_event))
+        cur_event = event_type.FetchFromLink(self, global_var.timestamp+self.link_delay)
+        heapq.heappush(global_var.queue, (global_var.timestamp, cur_event))
         self.on_the_link.append(self.buffer.popleft())
 
     def fetch_from_link(self):
-        self.link.end.recieve_packet(self.on_the_link.popleft())
+        self.end.recieve_packet(self.on_the_link.popleft())

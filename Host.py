@@ -1,5 +1,5 @@
-from Node import Node
-
+from node import *
+import global_var
 
 class Host(Node):
     def __init__(self, host_ipaddr):
