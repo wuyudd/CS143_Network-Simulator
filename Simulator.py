@@ -33,7 +33,7 @@ class Simulator(object):
         H1 = node['H1']
         H2 = node['H2']
 
-        f = Flow('F1', H1, H2, 1024, 1, 1024)
+        f = Flow('F1', H1, H2, 1024*10, 1, 1024)
 
         #flow = self.import_flow()
 
@@ -41,7 +41,7 @@ class Simulator(object):
         #for f in flow:
         event_temp = event_type.FlowInitialize(f, f.start_time)
         heapq.heappush(global_var.queue, (f.start_time, event_temp))
-        print(global_var.queue)
+        # print(global_var.queue)
 
         while global_var.queue:
             event = heapq.heappop(global_var.queue)
