@@ -44,7 +44,7 @@ class Flow(object):
 
     def add_event(self):   # start_time & index
         i = 0
-        while self.num_pkt_send < len(self.pkt_pool) and self.cnt <= self.window_size:
+        while self.num_pkt_send < len(self.pkt_pool) and self.cnt < self.window_size:
             index = self.num_pkt_send
             start_time = global_var.timestamp + i*0.1
             event = event_type.SendFromFlow(self, index, start_time)
