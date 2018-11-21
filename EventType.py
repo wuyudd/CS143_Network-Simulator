@@ -1,6 +1,27 @@
 from Event import Event
 from Simulator import Simulator
 
+
+class FlowInitialize(Event):
+    def __init__(self, flow, start_time):
+        self.flow = flow;
+        self.start_time = start_time
+
+    def action(self):
+        self.flow.generate_packet()
+        self.flow.add_event()
+
+class SendFromFlow(Event):
+    def __init__(self, flow, index, start_time):
+        self.flow = flow
+        self.index = index
+        self.start_time = start_time
+
+    def action(self):
+        prefix = 'pkt'
+        packet = self.flow.pkt_pool[prefix + str(index)]
+        self.flow.send_packet(packet)
+
 class FlowGeneratePkt(Event):
     def __init__(self, flow, start_time):
         self.flow = flow
@@ -38,18 +59,20 @@ class FetchFromLink(Event):
     def action(self):
         self.link.fetch_from_link()
 
+
 class TimeOut(Event):
-    def __init__(self, pkt, host, start_time):
+    def __init__(self, pkt, flow, start_time):
         self.pkt = pkt
-        self.host = host
+        self.flow = flow
         self.start_time = start_time
 
     def action(self):
         # host check ACK
-
         # if TimeOut, change window size and send again
         Simulator.queue.append(SendPkt())
         # if not Timeout, end
+
+        self.flow.time_out(self.pkt)
 
 
 class UpdateRoutingTable(Event):
