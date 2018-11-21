@@ -33,4 +33,4 @@ class Link(object):
         self.on_the_link.append(self.buffer.popleft())
 
     def fetch_from_link(self):
-        self.end.recieve_packet(self.on_the_link.popleft())
+        self.end.receive_packet(self.on_the_link.popleft())

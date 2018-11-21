@@ -16,7 +16,7 @@ class Simulator(object):
         self.flow = {}
 
     def run(self):
-        node, links = self.build_graph('test1.txt')
+        node, links = self.build_graph('test0.txt')
         print(node)
         print(links)
         H1 = node['H1']

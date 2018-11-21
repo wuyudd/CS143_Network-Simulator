@@ -11,6 +11,6 @@ class Node(object):
         self.outgoing_links[0].add_packet_to_buffer(pkt)
         return
 
-    def recieve_packet(self, pkt):
-        print('Recieve '+pkt.id)
-        return
+#    def recieve_packet(self, pkt):
+#        print('Recieve '+pkt.id)
+#        return

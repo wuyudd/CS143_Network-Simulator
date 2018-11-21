@@ -40,15 +40,16 @@ class Flow(object):
         name = 'pkt'+l[1]
         self.pkt_pool[name].set_ack(1)  # find the packet and mark it acknowledged
         self.cnt-=1
+        print("-1")
 
     def add_event(self):   # start_time & index
         i = 0
-        while self.num_pkt_send < len(self.pkt_pool): #and self.cnt <= self.window_size:
+        while self.num_pkt_send < len(self.pkt_pool) and self.cnt <= self.window_size:
             index = self.num_pkt_send
             start_time = global_var.timestamp + i*0.1
             event = event_type.SendFromFlow(self, index, start_time)
             heapq.heappush(global_var.queue, (start_time, event))
-            #self.cnt += 1
+            self.cnt += 1
             self.num_pkt_send += 1
             i += 1
 
