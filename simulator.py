@@ -6,6 +6,7 @@ from flow import *
 import heapq
 import event_type
 import global_var
+import global_consts
 
 
 
@@ -17,6 +18,7 @@ class Simulator(object):
 
     def run(self):
         node, links = self.build_graph('test0.txt')
+        flows = self.read_flow('flows.txt', node)
         print(node)
         print(links)
         H1 = node['H1']
@@ -84,3 +86,14 @@ class Simulator(object):
             links[cur[0] + '*'].end = node[cur[1]]
             i += 1
         return node, links
+
+    def read_flow(self, file_name, node):
+        data = [line.strip('\n') for line in open(file_name, 'r')]
+        flows = {}
+        i = 0
+        while i < len(data):
+            cur = data[i].split('\t')
+            flows[cur[0]] = Flow(cur[0], node[cur[1]], node[cur[2]], cur[3], cur[4], global_consts.PACKETSIZE)
+            node[cur[1]] = flows[cur[0]]
+            i += 1
+        return flows

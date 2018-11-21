@@ -6,9 +6,9 @@ import global_consts
 
 
 class Host(Node):
-    def __init__(self, host_ipaddr, flows):
+    def __init__(self, host_ipaddr):
         super().__init__(host_ipaddr)
-        self.flows = flows
+        self.flows = {}
 
     #def send_packet(self, to_send_pkt):
         #self.outgoing_links[0].add_packet_to_buffer(to_send_pkt)
