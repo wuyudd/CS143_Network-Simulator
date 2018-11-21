@@ -7,7 +7,6 @@ class Node(object):
         self.id = id
 
     def send(self):
-
         return
 
     def recieve_packet(self, pkt):

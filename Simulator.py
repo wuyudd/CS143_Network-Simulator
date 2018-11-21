@@ -2,9 +2,38 @@ from Router import Router
 from Link import Link
 from Host import Host
 from Node import Node
+import heapq
+import EventType
 
 
 class Simulator():
+    queue = []
+    timestamp = 0.0
+    flow = {}
+
+    def __init__(self):
+        self.node = {}
+        self.links = {}
+        self.flow = {}
+        self.queue = []
+        self.timestamp = 0.0
+
+    def run(self):
+        # node, links = self.build_graph()
+        flow = self.import_flow()
+
+        # deal with the flow, add event to queue
+        for f in flow:
+            event_temp = EventType.FlowInitialize(f, f.start_time)
+            heapq.heappush(Simulator.queue, (f.start_time, event_temp))
+
+        while Simulator.queue:
+            event = heapq.heappop(Simulator.queue)
+            event.action()
+
+    def import_flow(self):
+        return self
+
     def build_graph(self, file_name):
         data = [line.strip('\n') for line in open(file_name, 'r')]
         i = 1

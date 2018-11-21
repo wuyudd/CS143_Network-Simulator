@@ -24,7 +24,7 @@ class Link(object):
             # t is in second
             # cur_event is a new event to move packet from buffer to link
             cur_event = EventType.FetchFromBuffer(self, Simulator.timestamp+len(self.buffer)*8/(self.link_rate*1024))
-            heapq.heappush(Simulator.queue,(Simulator.timestamp, cur_event))
+            heapq.heappush(Simulator.queue, (Simulator.timestamp, cur_event))
 
     def buffer_to_link(self):
         cur_event = EventType.FetchFromLink(self, Simulator.timestamp+self.link_delay)
