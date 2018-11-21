@@ -36,12 +36,15 @@ class Simulator():
         # read graph
         while i < len(data) and data[i] != '#':
             cur = data[i].split('\t')
-            node[cur[1]].links.append(links[cur[0]])
-            node[cur[2]].links.append(links[cur[0]])
+            # specify the link from A to B
+            node[cur[1]].outgoing_links.append(links[cur[0]])
+            node[cur[2]].incoming_links.append(links[cur[0]])
             links[cur[0]].start = node[cur[1]]
             links[cur[0]].end = node[cur[2]]
-            node[cur[1]].links.append(links[cur[0] + '*'])
-            node[cur[2]].links.append(links[cur[0] + '*'])
+
+            # specify the link from B to A
+            node[cur[1]].incoming_links.append(links[cur[0] + '*'])
+            node[cur[2]].outgoing_links.append(links[cur[0] + '*'])
             links[cur[0] + '*'].start = node[cur[2]]
             links[cur[0] + '*'].end = node[cur[1]]
             i += 1

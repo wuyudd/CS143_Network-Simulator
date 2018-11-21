@@ -1,6 +1,7 @@
 import collections
-import Link
-import Packet
+from Link import Link
+from Packet import Packet
+
 from Node import Node
 
 class Router(Node):
@@ -8,14 +9,14 @@ class Router(Node):
         super().__init__(router_id)
         self.routing_table = {}
 
-    def send(self, packet):
-        pass
+    #def send(self, packet):
+    #    pass
         #dest = packet.getPacketDestination()
         #link = self.routing_table[dest]
         #link.addPacketToLink(packet)
 
-    def receive(self, packet):
-        pass
+    #def receive(self, packet):
+    #    pass
 
 
 
