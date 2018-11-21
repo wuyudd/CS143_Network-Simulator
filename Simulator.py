@@ -10,21 +10,10 @@ import global_var
 
 
 class Simulator(object):
-    queue = []
-    timestamp = 0.0
-
     def __init__(self):
         self.node = {}
         self.links = {}
         self.flow = {}
-
-    @staticmethod
-    def get_queue():
-        return global_var.queue
-
-    @staticmethod
-    def get_timestamp():
-        return global_var.timestamp
 
     def run(self):
         node, links = self.build_graph('test1.txt')
