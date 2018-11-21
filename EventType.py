@@ -23,24 +23,20 @@ class SendPkt(Event):
         Simulator.queue.append(TimeOut())
 
 class FetchFromBuffer(Event):
-    def __init__(self, link, pkt, start_time):
+    def __init__(self, link, start_time):
         self.link = link
-        self.pkt = pkt
         self.start_time = start_time
 
     def action(self):
-        self.link.transmit(self.pkt)
+        self.link.buffer_to_link()
 
 class FetchFromLink(Event):
-    def __init__(self, reciever, link ,pkt , start_time):
+    def __init__(self, link, start_time):
         self.link = link
-        self.reciever = reciever
-        self.pkt = pkt
         self.start_time = start_time
 
     def action(self):
-        self.reciever.recieve(self.pkt,self.link)
-
+        self.link.fetch_from_link()
 
 class TimeOut(Event):
     def __init__(self, pkt, host, start_time):

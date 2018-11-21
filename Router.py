@@ -2,6 +2,7 @@ import collections
 from Link import Link
 from Packet import Packet
 
+
 from Node import Node
 
 class Router(Node):

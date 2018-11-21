@@ -1,27 +1,35 @@
 import collections
+import heapq
+from Simulator import Simulator
+from Event import Event
+import EventType
 
 
 class Link(object):
-    def __init__(self, id, transmission_delay, propagation_delay, buffer_size, start, end):
+    def __init__(self, id, link_rate, link_delay, buffer_size, start, end):
+        # all time is in second, all data size is in Mb
         self.id = id
         self.size = buffer_size
-        self.buffer = {}
-        self.on_the_link = {}
-        self.transmission_delay = transmission_delay
-        self.propagation_delay = propagation_delay
+        self.buffer = collections.deque()
+        self.on_the_link = collections.deque()
+        self.link_rate = link_rate
+        self.link_delay = link_delay
         self.start = start
         self.end = end
 
     def add_packet_to_buffer(self, pkt):
         if len(self.buffer) < self.size:
-            self.buffer[pkt.id] = pkt
+            self.buffer.append(pkt)
+            # t = length_of_queue * packet_size/link_rate
+            # t is in second
+            # cur_event is a new event to move packet from buffer to link
+            cur_event = EventType.FetchFromBuffer(self, Simulator.timestamp+len(self.buffer)*8/(self.link_rate*1024))
+            heapq.heappush(Simulator.queue,(Simulator.timestamp, cur_event))
 
-    def transmit(self, pkt):
-        if pkt.id in self.buffer:
-            self.on_the_link[pkt.id] = self.buffer.pop(pkt.id)
+    def buffer_to_link(self):
+        cur_event = EventType.FetchFromLink(self, Simulator.timestamp+self.link_delay)
+        heapq.heappush(Simulator.queue, (Simulator.timestamp, cur_event))
+        self.on_the_link.append(self.buffer.popleft())
 
-    def pick_packet_from_link(self, pkt):
-        if pkt.id in self.on_the_link:
-            pkt = self.on_the_link.pop(pkt.id)
-        return pkt
-
+    def fetch_from_link(self):
+        self.link.end.recieve_packet(self.on_the_link.popleft())

@@ -10,9 +10,6 @@ class Node(object):
 
         return
 
-    def recieve(self,pkt,link):
-        if link not in self.incoming_links:
-            print(link.id+' not in incoming link of '+self.id)
-        packet = link.pick_packet_from_link(pkt)
-        print('Recieve '+packet.id)
+    def recieve_packet(self, pkt):
+        print('Recieve '+pkt.id)
         return
