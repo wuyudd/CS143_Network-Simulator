@@ -18,9 +18,6 @@ class Link(object):
         self.start = start
         self.end = end
 
-    def __lt__(self, other):
-        return self.id < other.id
-
     def add_packet_to_buffer(self, pkt):
         if len(self.buffer) < self.size:
             self.buffer.append(pkt)

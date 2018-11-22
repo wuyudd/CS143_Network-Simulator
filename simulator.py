@@ -23,6 +23,15 @@ class Simulator(object):
         H1 = node['H1']
         H2 = node['H2']
 
+# under construction
+        # node to routers
+
+        for i in range(5):
+            start_time = i * global_consts.UPDATEFREQUENCY
+            event = event_type.UpdateRoutingInfo(node, start_time)
+            heapq.heappush(global_var.queue, event)
+
+
         f = flows['F1']
         node['R1'].routing_table = {"10.10.10.1": links['L0*'], "10.10.10.2": links['L5']}
         print(node['R1'].incoming_links)
