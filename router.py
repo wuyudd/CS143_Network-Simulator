@@ -62,5 +62,42 @@ class Router(Node):
             id = "P_" + str(period)+ "_" + self.id
             routing_pkt = Routing_Packet(id, "routing", global_consts.PACKETSIZE, self, curr_link.end, info)
             curr_link.add_packet_to_buffer(routing_pkt)
+            
+    def dijkstra(self):
+        counter = 0
+        queue = []  # save links by comparing weight, (weight, outgoing_link)
+        curr_router = self
+        curr_router_link_list = {curr_router.id: []}  # the shortest path from router to curr_router
+
+        # get router and host in the self.routing_map
+        router_set = set()
+        host_set = set()
+        for ele in self.routing_map:
+            if ele[0][0].startswith('R'):
+                router_set.add(ele[0][0])
+            else:
+                host_set.add(ele[0][0])
+        num_of_hosts = len(host_set) # number of hosts
+
+        while counter < num_of_hosts:
+            while isinstance(curr_router, Host):
+                # at this time, curr_router is a host instance
+                if counter < num_of_hosts:
+                    self.routing_table[curr_router.id] = curr_router_link_list[0]  # only need the link from router
+                    curr_router = queue.pop()[1].end
+                    counter += 1
+                else:
+                    break
+            curr_router_outgoing_links = curr_router.outgoing_links
+            for curr_router_outgoing_link in curr_router_outgoing_links:
+                curr_router_end = curr_router_outgoing_link.end
+                if (self.id, curr_router_end.id) in curr_router.routing_map:
+                    curr_router_outgoing_link_weight = curr_router.routing_map[
+                        (self.id, curr_router_end.id)]  # get weight from routing_map of curr_router
+                    heapq.heappush(queue, (curr_router_outgoing_link_weight, curr_router_outgoing_link))
+
+            curr_min_link = heapq.heappop(queue)[1]
+            curr_router_link_list[curr_router.end.id] = curr_router_link_list[curr_router.id].append(curr_min_link)
+            curr_router = curr_min_link.end
 
 

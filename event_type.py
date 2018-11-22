@@ -80,7 +80,7 @@ class UpdateRoutingTable(Event):
 
     def action(self):
         for router in self.routers.values():
-            pass
+            router.dijkstra()
             # dijkstra
         global_var.updating_flag = False
         global_var.period += 1
@@ -109,6 +109,7 @@ class UpdateRoutingTable(Event):
         # udpate routing table info
         pass
 
+""""
 
 class RunDijkstra(Event):
     def __init__(self, routers, nodes):
@@ -142,3 +143,4 @@ class RunDijkstra(Event):
                 curr_router_link_list[curr_router.end.id] = curr_router_link_list[curr_router.id].append(curr_min_link)
                 curr_router = curr_min_link.end
 
+"""
