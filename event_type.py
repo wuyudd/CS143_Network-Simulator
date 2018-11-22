@@ -1,6 +1,8 @@
 import global_var
 from event import *
+from router import *
 from simulator import *
+import heapq
 
 
 class FlowInitialize(Event):
@@ -57,32 +59,6 @@ class TimeOut(Event):
         self.flow.time_out(self.pkt)
 
 
-class UpdateRoutingInfo(Event):
-    def __init__(self, routers, start_time):
-        self.routers = routers
-        self.start_time = start_time
-
-    def action(self):
-        global_var.updating_flag = True
-        for router in self.routers.values():
-            router.broadcast_routing_pkt()
-
-        event = UpdateRoutingTable(self.routers, self.start_time + global_consts.UPDATEDURATION)
-        heapq.heappush(global_var.queue, event)
-
-
-class UpdateRoutingTable(Event):
-    def __init__(self, routers, start_time):
-        self.routers = routers
-        self.start_time = start_time
-
-    def action(self):
-        for router in self.routers.values():
-            pass
-            # dijkstra
-        global_var.updating_flag = False
-        global_var.period += 1
-
 # in construction
 class SendPkt(Event):
     def __init__(self,src , pkt, link, start_time):
@@ -105,4 +81,37 @@ class UpdateRoutingTable(Event):
     def action(self):
         # udpate routing table info
         pass
+
+
+class RunDijkstra(Event):
+    def __init__(self, routers, nodes):
+        self.routers = routers
+        self.nodes = nodes
+
+    def action(self):
+        for router in self.routers:
+            counter = 0
+            queue = [] # save links by comparing weight, (weight, outgoing_link)
+            curr_router = router
+            curr_router_link_list = {curr_router.id: []} # the shortest path from router to curr_router
+            num_of_hosts = len(self.nodes) - len(self.routers) # number of hosts
+            while counter < num_of_hosts:
+                while isinstance(curr_router, Host):
+                    # at this time, curr_router is a host instance
+                    if counter < num_of_hosts:
+                        router.routing_table[curr_router.id] = curr_router_link_list[0] # only need the link from router
+                        curr_router = queue.pop()[1].end
+                        counter += 1
+                    else:
+                        break
+                curr_router_outgoing_links = curr_router.outgoing_links
+                for curr_router_outgoing_link in curr_router_outgoing_links:
+                    curr_router_end = curr_router_outgoing_link.end
+                    if (self.id, curr_router_end.id) in curr_router.map:
+                        curr_router_outgoing_link_weight = curr_router.map[(self.id, curr_router_end.id)] # get weight from map of curr_router
+                        heapq.heappush(queue, (curr_router_outgoing_link_weight, curr_router_outgoing_link))
+
+                curr_min_link = heapq.heappop(queue)[1]
+                curr_router_link_list[curr_router.end.id] = curr_router_link_list[curr_router.id].append(curr_min_link)
+                curr_router = curr_min_link.end
 
