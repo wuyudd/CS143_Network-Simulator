@@ -17,14 +17,16 @@ class Simulator(object):
         self.flow = {}
 
     def run(self):
-        node, links = self.build_graph('test0.txt')
-        flows = self.read_flow('flows.txt', node)
-        print(node)
+        node, links = self.build_graph('test1_temp.txt')
         print(links)
+        flows = self.read_flow('flows.txt', node)
         H1 = node['H1']
         H2 = node['H2']
 
         f = flows['F1']
+        node['R1'].routing_table = {"10.10.10.1": links['L0*'], "10.10.10.2": links['L5']}
+        print(node['R1'].incoming_links)
+        print(node['R1'].outgoing_links)
 
         #flow = self.import_flow()
 
@@ -33,7 +35,7 @@ class Simulator(object):
         event_temp = event_type.FlowInitialize(f, f.start_time)
         heapq.heappush(global_var.queue, event_temp)
         # print(global_var.queue)
-        
+
         while global_var.queue:
             event = heapq.heappop(global_var.queue)
             global_var.timestamp = event.start_time
@@ -75,17 +77,48 @@ class Simulator(object):
         while i < len(data) and data[i] != '#':
             cur = data[i].split('\t')
             # specify the link from A to B
-            print(cur)
-            node[cur[1]].outgoing_links.append(links[cur[0]])
-            node[cur[2]].incoming_links.append(links[cur[0]])
-            links[cur[0]].start = node[cur[1]]
-            links[cur[0]].end = node[cur[2]]
+            # print(cur)
+            endA,endB = cur[1],cur[2]
+            if endA[0] == 'H' and endB[0] == 'H':
+                node[endA].outgoing_links = links[cur[0]]
+                node[endB].incoming_links = links[cur[0]]
+                links[cur[0]].start = node[endA]
+                links[cur[0]].end = node[endB]
+                node[endA].incoming_links = links[cur[0] + '*']
+                node[endB].outgoing_links = links[cur[0] + '*']
+                links[cur[0] + '*'].start = node[endB]
+                links[cur[0] + '*'].end = node[endA]
 
-            # specify the link from B to A
-            node[cur[1]].incoming_links.append(links[cur[0] + '*'])
-            node[cur[2]].outgoing_links.append(links[cur[0] + '*'])
-            links[cur[0] + '*'].start = node[cur[2]]
-            links[cur[0] + '*'].end = node[cur[1]]
+            elif endA[0] == 'H' and endB[0] == 'R':
+                node[endA].outgoing_links = links[cur[0]]
+                node[endB].incoming_links[cur[0]] = links[cur[0]]
+                links[cur[0]].start = node[endA]
+                links[cur[0]].end = node[endB]
+                node[endA].incoming_links = links[cur[0] + '*']
+                node[endB].outgoing_links[cur[0]+'*'] = links[cur[0] + '*']
+                links[cur[0] + '*'].start = node[endB]
+                links[cur[0] + '*'].end = node[endA]
+
+            elif endA[0] == 'R' and endB[0] == 'H':
+                node[endA].outgoing_links[cur[0]] = links[cur[0]]
+                node[endB].incoming_links = links[cur[0]]
+                links[cur[0]].start = node[endA]
+                links[cur[0]].end = node[endB]
+                node[endA].incoming_links[cur[0] + '*'] = links[cur[0] + '*']
+                node[endB].outgoing_links = links[cur[0] + '*']
+                links[cur[0] + '*'].start = node[endB]
+                links[cur[0] + '*'].end = node[endA]
+
+            elif endA[0] == 'R' and endB[0] == 'R':
+                node[endA].outgoing_links[[cur[0]]] = links[cur[0]]
+                node[endB].incoming_links[[cur[0]]] = links[cur[0]]
+                links[cur[0]].start = node[endA]
+                links[cur[0]].end = node[endB]
+                node[endA].incoming_links[cur[0] + '*'] = links[cur[0] + '*']
+                node[endB].outgoing_links[cur[0] + '*'] = links[cur[0] + '*']
+                links[cur[0] + '*'].start = node[endB]
+                links[cur[0] + '*'].end = node[endA]
+
             i += 1
         return node, links
 

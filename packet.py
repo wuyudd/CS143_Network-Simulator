@@ -8,7 +8,7 @@ class Packet(object):
         self.ack = 0
 
     def getID(self):
-        return self.ID
+        return self.id
 
     def gettype(self):
         return self.type
@@ -17,10 +17,10 @@ class Packet(object):
         return self.size
 
     def getend1(self):
-        return self.end1
+        return self.start
 
     def getend2(self):
-        return self.end2
+        return self.end
 
     def get_ack(self):
         return self.ack
