@@ -25,11 +25,11 @@ class Link(object):
             # t is in second
             # cur_event is a new event to move packet from buffer to link
             cur_event = event_type.FetchFromBuffer(self, global_var.timestamp+len(self.buffer)*8/(self.link_rate*1024))
-            heapq.heappush(global_var.queue, (global_var.timestamp, cur_event))
+            heapq.heappush(global_var.queue, cur_event)
 
     def buffer_to_link(self):
         cur_event = event_type.FetchFromLink(self, global_var.timestamp+self.link_delay)
-        heapq.heappush(global_var.queue, (global_var.timestamp, cur_event))
+        heapq.heappush(global_var.queue, cur_event)
         self.on_the_link.append(self.buffer.popleft())
 
     def fetch_from_link(self):

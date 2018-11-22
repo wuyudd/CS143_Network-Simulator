@@ -30,25 +30,27 @@ class Flow(object):
 
     def send_packet(self,pkt):
         self.src.send_packet(pkt)
-        self.cnt+=1
+        #self.cnt+=1
         event = event_type.TimeOut(pkt, self, global_var.timestamp+1) # constant need to be modified
-        heapq.heappush(global_var.queue, (global_var.timestamp+1, event))
+        heapq.heappush(global_var.queue, event)
         return
 
     def receive_ack(self, ack):
         l = ack.id.split('pkt')
-        name = 'pkt'+l[1]
+        l1 = l[1].split('ack')
+        name = 'pkt'+l1[0]
         self.pkt_pool[name].set_ack(1)  # find the packet and mark it acknowledged
-        self.cnt-=1
-        print("-1")
+        self.cnt -= 1
+        self.add_event()
 
     def add_event(self):   # start_time & index
         i = 0
         while self.num_pkt_send < len(self.pkt_pool) and self.cnt < self.window_size:
             index = self.num_pkt_send
-            start_time = global_var.timestamp + i*0.1
+            curr_link_rate = self.src.outgoing_link.link_rate
+            start_time = global_var.timestamp + i * (8/(curr_link_rate*1024))
             event = event_type.SendFromFlow(self, index, start_time)
-            heapq.heappush(global_var.queue, (start_time, event))
+            heapq.heappush(global_var.queue, event)
             self.cnt += 1
             self.num_pkt_send += 1
             i += 1

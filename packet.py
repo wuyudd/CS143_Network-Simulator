@@ -25,5 +25,9 @@ class Packet(object):
     def get_ack(self):
         return self.ack
 
+    def set_ack(self, flag):
+        self.ack = flag
+
+
 
 
