@@ -59,6 +59,33 @@ class TimeOut(Event):
         self.flow.time_out(self.pkt)
 
 
+class UpdateRoutingInfo(Event):
+    def __init__(self, routers, start_time):
+        self.routers = routers
+        self.start_time = start_time
+
+    def action(self):
+        global_var.updating_flag = True
+        for router in self.routers.values():
+            router.broadcast_routing_pkt()
+
+        event = UpdateRoutingTable(self.routers, self.start_time + global_consts.UPDATEDURATION)
+        heapq.heappush(global_var.queue, event)
+
+
+class UpdateRoutingTable(Event):
+    def __init__(self, routers, start_time):
+        self.routers = routers
+        self.start_time = start_time
+
+    def action(self):
+        for router in self.routers.values():
+            pass
+            # dijkstra
+        global_var.updating_flag = False
+        global_var.period += 1
+
+
 # in construction
 class SendPkt(Event):
     def __init__(self,src , pkt, link, start_time):
