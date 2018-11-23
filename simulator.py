@@ -18,14 +18,13 @@ class Simulator(object):
 
     def run(self):
         routers, hosts, links = self.build_graph('test1_temp.txt')
-        print(routers)
-        print(hosts)
-        print(links)
+        #self.display_graph(routers, hosts, links)
         flows = self.read_flow('flows.txt', hosts)
-        H1 = routers['H1']
-        H2 = routers['H2']
 
-        for i in range(5):
+        #H1 = hosts['H1']
+        #H2 = hosts['H2']
+
+        for i in range(1):
             start_time = i * global_consts.UPDATEFREQUENCY
             event = event_type.UpdateRoutingInfo(routers, start_time)
             heapq.heappush(global_var.queue, event)
@@ -49,6 +48,7 @@ class Simulator(object):
             event = heapq.heappop(global_var.queue)
             global_var.timestamp = event.start_time
             event.action()
+
 
     def build_graph(self, file_name):
         data = [line.strip('\n') for line in open(file_name, 'r')]
@@ -116,8 +116,8 @@ class Simulator(object):
                 links[cur[0] + '*'].end = node[endA]
 
             elif endA[0] == 'R' and endB[0] == 'R':
-                node[endA].outgoing_links[[cur[0]]] = links[cur[0]]
-                node[endB].incoming_links[[cur[0]]] = links[cur[0]]
+                node[endA].outgoing_links[cur[0]] = links[cur[0]]
+                node[endB].incoming_links[cur[0]] = links[cur[0]]
                 links[cur[0]].start = node[endA]
                 links[cur[0]].end = node[endB]
                 node[endA].incoming_links[cur[0] + '*'] = links[cur[0] + '*']
@@ -144,8 +144,12 @@ class Simulator(object):
         i = 0
         while i < len(data):
             cur = data[i].split('\t')
-            print(cur)
+            #print(cur)
             flows[cur[0]] = Flow(cur[0], hosts[cur[1]], hosts[cur[2]], float(cur[3]), float(cur[4]), global_consts.PACKETSIZE)
             hosts[cur[1]].flows[cur[0]] = flows[cur[0]]
             i += 1
         return flows
+
+    def display_graph(self,routers, hosts, links):
+        for link in links.values():
+            print(link.id+': '+link.start.id+'->'+link.end.id)
