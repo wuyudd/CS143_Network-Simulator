@@ -82,6 +82,7 @@ class UpdateRoutingTable(Event):
 
     def action(self):
         for router in self.routers.values():
+            print("routing map " + router.id)
             print(router.routing_map)
             print(router.routing_table)
             router.dijkstra()
@@ -90,6 +91,19 @@ class UpdateRoutingTable(Event):
         global_var.updating_flag = False
         global_var.period += 1
 
+
+class SayHello(Event):
+    def __init__(self, routers, hosts, start_time):
+        self.routers = routers
+        self.hosts = hosts
+        self.start_time = start_time
+
+    def action(self):
+        for router in self.routers.values():
+            router.say_hello()
+
+        for host in self.hosts.values():
+            host.say_hello()
 
 """"
 

@@ -12,11 +12,12 @@ class Router(Node):
         super().__init__(router_id)
         self.incoming_links = {}
         self.outgoing_links = {}
+        self.neighbors = {}
         self.routing_table = {}
         self.routing_pkt_pool = set()
         self.routing_map = {}
 
-    def receive_packet(self, pkt):
+    def receive_packet(self, pkt, link):
         type = pkt.type
         #print(self.id + ':'+ 'Recieve ' + pkt.id + '@ P' + str(global_var.period))
         if type == "data" or type == "data_ack":
@@ -33,7 +34,12 @@ class Router(Node):
                             if(curr_link.end != pkt.start):
                                 curr_pkt = Routing_Packet(pkt.id, "routing", global_consts.PACKETSIZE, self, curr_link.end, pkt.info)
                                 curr_link.add_packet_to_buffer(curr_pkt)
-        #elif type == "routing_ack":
+        elif type == "hello":
+            if link.id[-1] == '*':
+                self.neighbors[link.start.id] = self.outgoing_links[link.id[:len(link.id)-1]]
+            else:
+                self.neighbors[link.start.id] = self.outgoing_links[link.id + '*']
+
 
     def send(self, pkt):
         type = pkt.type
@@ -66,7 +72,7 @@ class Router(Node):
             routing_pkt = Routing_Packet(id, "routing", global_consts.PACKETSIZE, self, curr_link.end, info)
             curr_link.add_packet_to_buffer(routing_pkt)
             
-    def dijkstra(self):
+    def dijkstra1(self):
         counter = 0
         queue = []  # save links by comparing weight, (weight, outgoing_link)
         curr_router = self
@@ -110,21 +116,82 @@ class Router(Node):
             curr_router = curr_min_link.end
             print(curr_router_link_list)
 
+    def say_hello(self):
+        for curr_link in self.outgoing_links.values():
+            hello_pkt = Packet("HelloFrom"+self.id, "hello", global_consts.PACKETSIZE, self, curr_link.end)
+            curr_link.add_packet_to_buffer(hello_pkt)
+
+
+
 
     def dijkstra(self):
-        ensured_dist = {}
-        ensured_dist[self.id] = 0
+        known_dist = {}
+        known_dist[self.id] = 0
 
         unknow_dist = set()
         for key in self.routing_map.keys():
-            if key[0] not in ensured_dist:
+            if key[0] not in known_dist:
                 unknow_dist.add(key[0])
-            if key[1] not in ensured_dist:
-                unknow_dist.add(key(1))
+            if key[1] not in known_dist:
+                unknow_dist.add(key[1])
 
         #run dijstra
-        curr_node = self.id
+
+        parent = {self.id: None}
+        children = {}
+        cur_node = self.id
+        cur_dist = 0
+        queue = []
         while unknow_dist:
+            for s,e in self.routing_map.keys():
+                if s == cur_node:
+                    heapq.heappush(queue, (self.routing_map[(s,e)]+cur_dist,(s,e)))
+            cur_path_length, cur_link = heapq.heappop(queue)
+            if cur_link[1] not in known_dist:
+                known_dist[cur_link[1]] = cur_path_length
+                unknow_dist.remove(cur_link[1])
+                parent[cur_link[1]] = cur_link[0]
+                children[cur_link[0]] = children.get(cur_link[0], []) + [cur_link[1]]
+                cur_node = cur_link[1]
+                cur_dist = cur_path_length
+        print('Tree:::::::::')
+        print(children)
+        routing_info = {}
+        #recover the shortest path
+        for child in children[self.id]:
+            routing_info[child] = self.DFS(child, children)
+        print ('rounting_info: ')
+        print(routing_info)
+        print('hahahaahahhahaha')
+        print(self.neighbors)
+        for key,value in routing_info.items():
+            dest_list = value.split(' ')
+            if dest_list:
+                for dest in dest_list:
+                    self.routing_table[dest] = self.neighbors[key]
+        print(self.id + 'routing table: ')
+        print(self.routing_table)
+        val = self.routing_table.values()
+        print(self.routing_table['10.10.10.1'].id)
+        print(self.routing_table['10.10.10.2'].id)
+
+
+    def DFS(self,  cur, children):
+        if cur[0].isdigit():
+            return cur
+        if cur not in children:
+            return ''
+        s = ''
+        for child in children[cur]:
+            if s != '':
+                s = s+' '+self.DFS(child, children)
+            else:
+                s += self.DFS(child, children)
+        return s
+
+
+
+
 
 
 

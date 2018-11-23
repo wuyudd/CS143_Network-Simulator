@@ -32,6 +32,3 @@ class Routing_Packet(Packet):
     def __init__(self, id, type, size, start, end, info):
         super().__init__(id, type, size, start, end)
         self.info = info
-
-
-

@@ -18,8 +18,12 @@ class Simulator(object):
 
     def run(self):
         routers, hosts, links = self.build_graph('test1_temp.txt')
-        #self.display_graph(routers, hosts, links)
+        self.display_graph(routers, hosts, links)
         flows = self.read_flow('flows.txt', hosts)
+
+        start_time = -1
+        event = event_type.SayHello(routers, hosts, start_time)
+        heapq.heappush(global_var.queue, event)
 
         #H1 = hosts['H1']
         #H2 = hosts['H2']
