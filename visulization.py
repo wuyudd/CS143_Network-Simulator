@@ -13,6 +13,6 @@ class Visulization(object):
         # print(self.links['L1'].plot_link_buffer_time)
         # print(self.links['L1'].plot_link_buffer)
 
-        plt.plot(self.links['L1'].plot_link_buffer_time, self.links['L1'].plot_link_buffer)
+        plt.plot(self.links['L0*'].plot_link_buffer_time, self.links['L0*'].plot_link_buffer)
 
         plt.show()

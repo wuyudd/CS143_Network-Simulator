@@ -14,7 +14,7 @@ class Flow(object):
         self.size = size
         self.start_time = start_time
         self.cnt = 0
-        self.window_size = 100
+        self.window_size = 64
         self.packet_size = packet_size
         self.pkt_pool = {}
         self.num_pkt_send = 0
