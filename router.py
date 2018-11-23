@@ -16,6 +16,7 @@ class Router(Node):
         self.routing_table = {}
         self.routing_pkt_pool = set()
         self.routing_map = {}
+        self.out_pkt_size = {}
 
     def receive_packet(self, pkt, link):
         type = pkt.type
@@ -37,91 +38,38 @@ class Router(Node):
         elif type == "hello":
             if link.id[-1] == '*':
                 self.neighbors[link.start.id] = self.outgoing_links[link.id[:len(link.id)-1]]
+                self.out_pkt_size[link.id[:len(link.id)-1]] = 0
             else:
                 self.neighbors[link.start.id] = self.outgoing_links[link.id + '*']
-
+                self.out_pkt_size[link.id + '*'] = 0
 
     def send(self, pkt):
         type = pkt.type
         if type == "data" or type == "data_ack":
-            end = pkt.end
-            link = self.routing_table[end.id]
+            link = self.routing_table[pkt.end.id]
             link.add_packet_to_buffer(pkt)
 
-        #elif type == "routing":
-
-
-        #elif type == "routing_ack":
-        #    self.update_routing_table(pkt)
-
-    def init_routing_table(self):
-        pass
-
-    def update_routing_table(self, pkt):
-        pass
-
     def broadcast_routing_pkt(self):
-        weight = 1
         info = {}
         for curr_link in self.outgoing_links.values():
+            weight = curr_link.link_delay + global_consts.WEIGHTFACTOR * self.out_pkt_size[curr_link.id]/curr_link.link_rate
             info[(self.id, curr_link.end.id)] = weight
             self.routing_map[(self.id, curr_link.end.id)] = weight
 
         for curr_link in self.outgoing_links.values():
-            id = "P_" + str(global_var.period)+ "_" + self.id
+            id = "ROUTINGINFO@P_" + str(global_var.period)+ "_" + self.id
             routing_pkt = Routing_Packet(id, "routing", global_consts.PACKETSIZE, self, curr_link.end, info)
             curr_link.add_packet_to_buffer(routing_pkt)
-            
-    def dijkstra1(self):
-        counter = 0
-        queue = []  # save links by comparing weight, (weight, outgoing_link)
-        curr_router = self
-        curr_router_link_list = {curr_router.id: []}  # the shortest path from router to curr_router
 
-        # get router and host in the self.routing_map
-        router_set = set()
-        host_set = set()
-        for ele, val in self.routing_map.items():
-            if ele[0].startswith('R'):
-                router_set.add(ele[0])
-            if ele[0][0].isdigit():
-                host_set.add(ele[0])
-            if ele[1].startswith('R'):
-                router_set.add(ele[1])
-            if ele[1][0].isdigit():
-                host_set.add(ele[1])
-        num_of_hosts = len(host_set) # number of hosts
-
-        while counter < num_of_hosts:
-            while isinstance(curr_router, Host):
-                # at this time, curr_router is a host instance
-                if counter < num_of_hosts:
-                    # print(curr_router_link_list)
-                    self.routing_table[curr_router.id] = curr_router_link_list[curr_router.id][0]  # only need the link from router
-                    curr_router = heapq.heappop(queue)[1].end
-                    counter += 1
-                else:
-                    break
-
-            for curr_router_outgoing_link in curr_router.outgoing_links.values():
-                curr_router_end = curr_router_outgoing_link.end
-                if (self.id, curr_router_end.id) in curr_router.routing_map:
-                    curr_router_outgoing_link_weight = curr_router.routing_map[
-                        (self.id, curr_router_end.id)]  # get weight from routing_map of curr_router
-                    heapq.heappush(queue, (curr_router_outgoing_link_weight, curr_router_outgoing_link))
-            print("queue")
-            print(queue)
-            curr_min_link = heapq.heappop(queue)[1]
-            curr_router_link_list[curr_min_link.end.id] = curr_router_link_list[curr_router.id] + [curr_min_link]
-            curr_router = curr_min_link.end
-            print(curr_router_link_list)
+        # clear out_pkt_size for all links connected to this router
+        for key in self.out_pkt_size.keys():
+            self.out_pkt_size[key] = 0
+    
 
     def say_hello(self):
         for curr_link in self.outgoing_links.values():
-            hello_pkt = Packet("HelloFrom"+self.id, "hello", global_consts.PACKETSIZE, self, curr_link.end)
+            hello_pkt = Packet("HelloFrom"+self.id, "hello", global_consts.ACKSIZE, self, curr_link.end)
             curr_link.add_packet_to_buffer(hello_pkt)
-
-
 
 
     def dijkstra(self):
@@ -154,16 +102,10 @@ class Router(Node):
                 children[cur_link[0]] = children.get(cur_link[0], []) + [cur_link[1]]
                 cur_node = cur_link[1]
                 cur_dist = cur_path_length
-        print('Tree:::::::::')
-        print(children)
         routing_info = {}
         #recover the shortest path
         for child in children[self.id]:
             routing_info[child] = self.DFS(child, children)
-        print ('rounting_info: ')
-        print(routing_info)
-        print('hahahaahahhahaha')
-        print(self.neighbors)
         for key,value in routing_info.items():
             dest_list = value.split(' ')
             if dest_list:

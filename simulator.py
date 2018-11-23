@@ -21,14 +21,14 @@ class Simulator(object):
         self.display_graph(routers, hosts, links)
         flows = self.read_flow('flows.txt', hosts)
 
-        start_time = -1
-        event = event_type.SayHello(routers, hosts, start_time)
+        event = event_type.SayHello(routers, hosts, -3)
         heapq.heappush(global_var.queue, event)
-
+        event = event_type.UpdateRoutingInfo(routers, -2)
+        heapq.heappush(global_var.queue, event)
         #H1 = hosts['H1']
         #H2 = hosts['H2']
 
-        for i in range(1):
+        for i in range(1,5):
             start_time = i * global_consts.UPDATEFREQUENCY
             event = event_type.UpdateRoutingInfo(routers, start_time)
             heapq.heappush(global_var.queue, event)
@@ -39,19 +39,19 @@ class Simulator(object):
         #print(routers['R1'].incoming_links)
         #print(routers['R1'].outgoing_links)
 
-        #flow = self.import_flow()
-
         # deal with the flow, add event to queue
         #for f in flow:
 
-        #event_temp = event_type.FlowInitialize(f, f.start_time)
-        #heapq.heappush(global_var.queue, event_temp)
+        event_temp = event_type.FlowInitialize(f, f.start_time)
+        heapq.heappush(global_var.queue, event_temp)
         # print(global_var.queue)
 
         while global_var.queue:
             event = heapq.heappop(global_var.queue)
             global_var.timestamp = event.start_time
             event.action()
+
+        return links
 
 
     def build_graph(self, file_name):

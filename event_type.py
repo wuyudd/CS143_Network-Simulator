@@ -66,8 +66,6 @@ class UpdateRoutingInfo(Event):
 
     def action(self):
         global_var.updating_flag = True
-        print(self.routers)
-        print(global_var.period)
         for router in self.routers.values():
             router.broadcast_routing_pkt()
 
@@ -82,8 +80,6 @@ class UpdateRoutingTable(Event):
 
     def action(self):
         for router in self.routers.values():
-            print("routing map " + router.id)
-            print(router.routing_map)
             print(router.routing_table)
             router.dijkstra()
 

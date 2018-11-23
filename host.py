@@ -30,5 +30,5 @@ class Host(Node):
 
 
     def say_hello(self):
-        hello_pkt = Packet("HelloFrom"+self.id, "hello", global_consts.PACKETSIZE, self, self.outgoing_links.end)
+        hello_pkt = Packet("HelloFrom"+self.id, "hello", global_consts.ACKSIZE, self, self.outgoing_links.end)
         self.outgoing_links.add_packet_to_buffer(hello_pkt)
