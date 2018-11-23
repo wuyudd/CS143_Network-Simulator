@@ -14,7 +14,7 @@ class Flow(object):
         self.size = size
         self.start_time = start_time
         self.cnt = 0
-        self.window_size = 3
+        self.window_size = 100
         self.packet_size = packet_size
         self.pkt_pool = {}
         self.num_pkt_send = 0
@@ -48,7 +48,7 @@ class Flow(object):
         while self.num_pkt_send < len(self.pkt_pool) and self.cnt < self.window_size:
             index = self.num_pkt_send
             curr_link_rate = self.src.outgoing_links.link_rate
-            start_time = global_var.timestamp + i * (8/(curr_link_rate*1024))
+            start_time = global_var.timestamp #+ i * (8/(curr_link_rate*1024))
             event = event_type.SendFromFlow(self, index, start_time)
             heapq.heappush(global_var.queue, event)
             self.cnt += 1

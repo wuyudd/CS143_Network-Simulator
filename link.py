@@ -60,10 +60,10 @@ class Link(object):
 
         # data/routing is 1024 KB
         if pkt.size == global_consts.PACKETSIZE:
-            self.data_pkt_cnt += 1
+            self.data_pkt_cnt -= 1
         # data_ack/hello is 64 KB
         elif pkt.size == global_consts.ACKSIZE:
-            self.ack_pkt_cnt += 1
+            self.ack_pkt_cnt -= 1
 
     def fetch_from_link(self):
         self.end.receive_packet(self.on_the_link.popleft(), self)

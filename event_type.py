@@ -80,7 +80,6 @@ class UpdateRoutingTable(Event):
 
     def action(self):
         for router in self.routers.values():
-            print(router.routing_table)
             router.dijkstra()
 
             # dijkstra

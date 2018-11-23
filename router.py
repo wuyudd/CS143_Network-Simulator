@@ -90,11 +90,17 @@ class Router(Node):
         cur_node = self.id
         cur_dist = 0
         queue = []
+        print(self.routing_map)
+
         while unknow_dist:
+            print("================")
+            print(unknow_dist)
+            print(known_dist)
             for s,e in self.routing_map.keys():
-                if s == cur_node:
+                if s == cur_node and e not in known_dist:
                     heapq.heappush(queue, (self.routing_map[(s,e)]+cur_dist,(s,e)))
             cur_path_length, cur_link = heapq.heappop(queue)
+            print(cur_link)
             if cur_link[1] not in known_dist:
                 known_dist[cur_link[1]] = cur_path_length
                 unknow_dist.remove(cur_link[1])
@@ -102,13 +108,16 @@ class Router(Node):
                 children[cur_link[0]] = children.get(cur_link[0], []) + [cur_link[1]]
                 cur_node = cur_link[1]
                 cur_dist = cur_path_length
+            #print(unknow_dist)
+            #print(queue)
+
         routing_info = {}
         #recover the shortest path
         for child in children[self.id]:
             routing_info[child] = self.DFS(child, children)
-        for key,value in routing_info.items():
-            dest_list = value.split(' ')
-            if dest_list:
+        for key, value in routing_info.items():
+            if len(value) != 0:
+                dest_list = value.split(' ')
                 for dest in dest_list:
                     self.routing_table[dest] = self.neighbors[key]
         print(self.id + 'routing table: ')

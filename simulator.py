@@ -28,7 +28,7 @@ class Simulator(object):
         #H1 = hosts['H1']
         #H2 = hosts['H2']
 
-        for i in range(1,5):
+        for i in range(1,12):
             start_time = i * global_consts.UPDATEFREQUENCY
             event = event_type.UpdateRoutingInfo(routers, start_time)
             heapq.heappush(global_var.queue, event)
@@ -50,7 +50,6 @@ class Simulator(object):
             event = heapq.heappop(global_var.queue)
             global_var.timestamp = event.start_time
             event.action()
-
         return links
 
 
