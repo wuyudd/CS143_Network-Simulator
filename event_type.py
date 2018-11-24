@@ -93,7 +93,7 @@ class CheckLinkRate(Event):
 
     def action(self):
         for link in self.links.values():
-            link.plot_link_rate.append(link.plot_link_rate_size / global_consts.READLINKRATEFREQUENCY)
+            link.plot_link_rate.append((link.plot_link_rate_size*8/1024**2) / global_consts.READLINKRATEFREQUENCY)
             link.plot_link_rate_size = 0
 
 

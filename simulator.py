@@ -28,17 +28,17 @@ class Simulator(object):
         #H1 = hosts['H1']
         #H2 = hosts['H2']
 
-        for i in range(1,80):
+        for i in range(1, 80):
             start_time = i * global_consts.UPDATEFREQUENCY
             event = event_type.UpdateRoutingInfo(routers, start_time)
             heapq.heappush(global_var.queue, event)
-        """
-        for i in range(1,160):
+
+        for i in range(1, 16000):
             start_time = i * global_consts.READLINKRATEFREQUENCY
             event = event_type.CheckLinkRate(links, start_time)
             heapq.heappush(global_var.queue, event)
             global_var.plot_link_rate_time_axis.append(i * global_consts.READLINKRATEFREQUENCY)
-        """
+
 
 
 
