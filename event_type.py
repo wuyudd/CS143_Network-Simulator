@@ -86,6 +86,16 @@ class UpdateRoutingTable(Event):
         global_var.updating_flag = False
         global_var.period += 1
 
+class CheckLinkRate(Event):
+    def __init__(self, links, start_time):
+        self.links = links
+        self.start_time = start_time
+
+    def action(self):
+        for link in self.links.values():
+            link.plot_link_rate.append(link.plot_link_rate_size / global_consts.READLINKRATEFREQUENCY)
+            link.plot_link_rate_size = 0
+
 
 class SayHello(Event):
     def __init__(self, routers, hosts, start_time):

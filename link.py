@@ -24,6 +24,10 @@ class Link(object):
         self.plot_link_buffer_time = []
         self.plot_link_buffer = []
 
+        self.plot_link_rate = []
+        self.plot_link_rate_size = 0
+
+
     def __lt__(self, other):
         return self.id < other.id
 
@@ -52,6 +56,8 @@ class Link(object):
         self.plot_link_buffer_time.append(global_var.timestamp)
         self.plot_link_buffer.append(self.cur_size)
 
+        self.plot_link_rate_size += pkt.size
 
     def fetch_from_link(self):
         self.end.receive_packet(self.on_the_link.popleft(), self)
+

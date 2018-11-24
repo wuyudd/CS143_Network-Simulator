@@ -33,6 +33,12 @@ class Simulator(object):
             event = event_type.UpdateRoutingInfo(routers, start_time)
             heapq.heappush(global_var.queue, event)
 
+        for i in range(1,160):
+            start_time = i * global_consts.READLINKRATEFREQUENCY
+            event = event_type.CheckLinkRate(links, start_time)
+            heapq.heappush(global_var.queue, event)
+            global_var.plot_link_rate_time_axis.append(i * global_consts.READLINKRATEFREQUENCY)
+
 
 
         f = flows['F1']
