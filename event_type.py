@@ -16,15 +16,15 @@ class FlowInitialize(Event):
 
 
 class SendFromFlow(Event):
-    def __init__(self, flow, index, start_time):
+    def __init__(self, flow, pkt, start_time):
         self.flow = flow
-        self.index = index
+        self.pkt = pkt
         self.start_time = start_time
 
     def action(self):
-        prefix = 'pkt'
-        packet = self.flow.pkt_pool[prefix + str(self.index)]
-        self.flow.send_packet(packet)
+        #prefix = 'pkt'
+        #packet = self.flow.pkt_pool[prefix + str(self.index)]
+        self.flow.send_packet(self.pkt)
 
 
 class FetchFromBuffer(Event):
