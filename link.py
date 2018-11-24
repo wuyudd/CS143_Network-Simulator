@@ -23,8 +23,6 @@ class Link(object):
         self.end = end
         self.plot_link_buffer_time = []
         self.plot_link_buffer = []
-        self.ack_pkt_cnt = 0
-        self.data_pkt_cnt = 0
 
     def __lt__(self, other):
         return self.id < other.id
@@ -34,22 +32,14 @@ class Link(object):
             self.start.out_pkt_size[self.id] += pkt.size
         if self.cur_size + pkt.size <= self.max_size:
             self.buffer.append(pkt)
-            self.cur_size += pkt.size
             # plot function
             self.plot_link_buffer_time.append(global_var.timestamp)
-            self.plot_link_buffer.append(len(self.buffer))
-            # t = length_of_queue * packet_size/link_rate
-            # t is in second
+            self.plot_link_buffer.append(self.cur_size)
             # cur_event is a new event to move packet from buffer to link
-            expected_waiting_time = self.data_pkt_cnt * 8/1024 + self.ack_pkt_cnt /2048  # in s
+            expected_waiting_time = self.cur_size*8/(self.link_rate*1024*1024)#self.data_pkt_cnt * 8/(1024*1) + self.ack_pkt_cnt / (2048*1)  # in s
             cur_event = event_type.FetchFromBuffer(self, global_var.timestamp+expected_waiting_time)
             heapq.heappush(global_var.queue, cur_event)
-            # data/routing is 1024 B
-            if pkt.size == global_consts.PACKETSIZE:
-                self.data_pkt_cnt += 1
-            # data_ack/hello is 64 B
-            elif pkt.size == global_consts.ACKSIZE:
-                self.ack_pkt_cnt += 1
+            self.cur_size += pkt.size
 
     def buffer_to_link(self):
         cur_event = event_type.FetchFromLink(self, global_var.timestamp+self.link_delay)
@@ -60,14 +50,8 @@ class Link(object):
 
         # plot function
         self.plot_link_buffer_time.append(global_var.timestamp)
-        self.plot_link_buffer.append(len(self.buffer))
+        self.plot_link_buffer.append(self.cur_size)
 
-        # data/routing is 1024 B
-        if pkt.size == global_consts.PACKETSIZE:
-            self.data_pkt_cnt -= 1
-        # data_ack/hello is 64 B
-        elif pkt.size == global_consts.ACKSIZE:
-            self.ack_pkt_cnt -= 1
 
     def fetch_from_link(self):
         self.end.receive_packet(self.on_the_link.popleft(), self)

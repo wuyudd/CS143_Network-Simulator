@@ -56,7 +56,7 @@ class Flow(object):
             i += 1
 
     def time_out(self, pkt):
-        if pkt.get_ack()==0:
+        if pkt.get_ack() == 0:
             self.cnt -= 1   # need to resend pck
 
 
