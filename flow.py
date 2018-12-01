@@ -54,7 +54,7 @@ class Flow(object):
         while self.timeout_queue and self.cnt < self.window_size:
             #index = self.num_pkt_send
             curr_link_rate = self.src.outgoing_links.link_rate
-            start_time = global_var.timestamp #+ i * (8/(curr_link_rate*1024))
+            start_time = global_var.timestamp + i * (8/(curr_link_rate*1024))
             pkt = self.timeout_queue.popleft()
             event = event_type.SendFromFlow(self, pkt, start_time)
             heapq.heappush(global_var.queue, event)
@@ -64,7 +64,7 @@ class Flow(object):
         while self.sending_queue and self.cnt < self.window_size:
             #index = self.num_pkt_send
             curr_link_rate = self.src.outgoing_links.link_rate
-            start_time = global_var.timestamp #+ i * (8/(curr_link_rate*1024))
+            start_time = global_var.timestamp + i * (8/(curr_link_rate*1024))
             pkt = self.sending_queue.popleft()
             event = event_type.SendFromFlow(self, pkt, start_time)
             heapq.heappush(global_var.queue, event)

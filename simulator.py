@@ -25,15 +25,19 @@ class Simulator(object):
         heapq.heappush(global_var.queue, event)
         event = event_type.UpdateRoutingInfo(routers, -2)
         heapq.heappush(global_var.queue, event)
+
+        #links['L0'].max_size = 512*1024
+        #links['L1'].link_rate = 12.5
+
         #H1 = hosts['H1']
         #H2 = hosts['H2']
 
-        for i in range(1, 80):
+        for i in range(1, 30):
             start_time = i * global_consts.UPDATEFREQUENCY
             event = event_type.UpdateRoutingInfo(routers, start_time)
             heapq.heappush(global_var.queue, event)
 
-        for i in range(1, 16000):
+        for i in range(1500):
             start_time = i * global_consts.READLINKRATEFREQUENCY
             event = event_type.CheckLinkRate(links, start_time)
             heapq.heappush(global_var.queue, event)
@@ -59,6 +63,9 @@ class Simulator(object):
             global_var.timestamp = event.start_time
             event.action()
             #print(len(global_var.queue))
+        for l in links.values():
+            print(l.id+' delay: '+str(l.link_delay))
+            print(l.id+' lost_pkt: '+str(l.num_lost_pkt))
         return links
 
 

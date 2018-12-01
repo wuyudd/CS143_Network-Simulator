@@ -16,6 +16,7 @@ class Router(Node):
         self.routing_table = {}
         self.routing_pkt_pool = set()
         self.routing_map = {}
+        self.num_edge_on_map = 0
         self.out_pkt_size = {}
 
     def receive_packet(self, pkt, link):
@@ -73,9 +74,14 @@ class Router(Node):
 
 
     def dijkstra(self):
+        if global_var.period == 0:
+            self.num_edge_on_map = len(self.routing_map)
+        print('!!!!!!!!!!!!!!'+str(len(self.routing_map)))
+        print(self.num_edge_on_map)
+        if len(self.routing_map) != self.num_edge_on_map:
+            return
         known_dist = {}
         known_dist[self.id] = 0
-
         unknow_dist = set()
         for key in self.routing_map.keys():
             if key[0] not in known_dist:
@@ -90,17 +96,17 @@ class Router(Node):
         cur_node = self.id
         cur_dist = 0
         queue = []
-        print(self.routing_map)
+        #print(self.routing_map)
 
         while unknow_dist:
-            print("================")
-            print(unknow_dist)
-            print(known_dist)
+            # print("================")
+            # print(unknow_dist)
+            # print(known_dist)
             for s,e in self.routing_map.keys():
                 if s == cur_node and e not in known_dist:
                     heapq.heappush(queue, (self.routing_map[(s,e)]+cur_dist,(s,e)))
             cur_path_length, cur_link = heapq.heappop(queue)
-            print(cur_link)
+            #print(cur_link)
             if cur_link[1] not in known_dist:
                 known_dist[cur_link[1]] = cur_path_length
                 unknow_dist.remove(cur_link[1])
@@ -125,7 +131,7 @@ class Router(Node):
         val = self.routing_table.values()
         print(self.routing_table['10.10.10.1'].id)
         print(self.routing_table['10.10.10.2'].id)
-
+        self.routing_map = {}
 
     def DFS(self,  cur, children):
         if cur[0].isdigit():

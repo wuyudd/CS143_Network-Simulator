@@ -110,38 +110,3 @@ class SayHello(Event):
         for host in self.hosts.values():
             host.say_hello()
 
-""""
-
-class RunDijkstra(Event):
-    def __init__(self, routers, nodes):
-        self.routers = routers
-        self.nodes = nodes
-
-    def action(self):
-        for router in self.routers:
-            counter = 0
-            queue = [] # save links by comparing weight, (weight, outgoing_link)
-            curr_router = router
-            curr_router_link_list = {curr_router.id: []} # the shortest path from router to curr_router
-            num_of_hosts = len(self.nodes) - len(self.routers) # number of hosts
-            while counter < num_of_hosts:
-                while isinstance(curr_router, Host):
-                    # at this time, curr_router is a host instance
-                    if counter < num_of_hosts:
-                        router.routing_table[curr_router.id] = curr_router_link_list[0] # only need the link from router
-                        curr_router = queue.pop()[1].end
-                        counter += 1
-                    else:
-                        break
-                curr_router_outgoing_links = curr_router.outgoing_links
-                for curr_router_outgoing_link in curr_router_outgoing_links:
-                    curr_router_end = curr_router_outgoing_link.end
-                    if (self.id, curr_router_end.id) in curr_router.map:
-                        curr_router_outgoing_link_weight = curr_router.map[(self.id, curr_router_end.id)] # get weight from map of curr_router
-                        heapq.heappush(queue, (curr_router_outgoing_link_weight, curr_router_outgoing_link))
-
-                curr_min_link = heapq.heappop(queue)[1]
-                curr_router_link_list[curr_router.end.id] = curr_router_link_list[curr_router.id].append(curr_min_link)
-                curr_router = curr_min_link.end
-
-"""

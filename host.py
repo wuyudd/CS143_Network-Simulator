@@ -18,7 +18,7 @@ class Host(Node):
 
     def receive_packet(self, pkt, link):
         # for debug
-        #print(str(round(global_var.timestamp, 7)) + ", " + self.id + ' recieve '+ pkt.id)
+        print(str(round(global_var.timestamp, 7)) + ", " + self.id + ' recieve '+ pkt.id)
         if pkt.type == "data":
             ack_pkt = Packet(pkt.id + "ack", "data_ack", global_consts.ACKSIZE, self, pkt.start)
             self.outgoing_links.add_packet_to_buffer(ack_pkt)
