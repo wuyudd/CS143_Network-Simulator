@@ -25,7 +25,7 @@ class Router(Node):
         if type == "data" or type == "data_ack":
             self.send(pkt)
         elif type == "routing": # bypass routing information
-            print(self.id+'recieve'+'XXXXXXXXXXXXXXX')
+            #print(self.id+'recieve'+'XXXXXXXXXXXXXXX')
             if global_var.updating_flag == True:
                 s = pkt.id.split("_")
                 print(s[1])
@@ -80,8 +80,8 @@ class Router(Node):
     def dijkstra(self):
         if global_var.period == 0:
             self.num_edge_on_map = len(self.routing_map)
-        print('!!!!!!!!!!!!!!'+str(len(self.routing_map)))
-        print(self.num_edge_on_map)
+        #print('!!!!!!!!!!!!!!'+str(len(self.routing_map)))
+        #print(self.num_edge_on_map)
         if len(self.routing_map) != self.num_edge_on_map:
             return
         known_dist = {}

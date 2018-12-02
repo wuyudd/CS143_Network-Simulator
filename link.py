@@ -17,6 +17,7 @@ class Link(object):
         self.id = id
         self.cur_size = 0.0
         self.max_size = buffer_size*1024
+        self.link_lock = False
 
         self.buffer = collections.deque()
         self.on_the_link = collections.deque()
@@ -41,7 +42,7 @@ class Link(object):
     def add_packet_to_buffer(self, pkt):
         if pkt.type != 'hello' and isinstance(self.start, router.Router):
             self.start.out_pkt_size[self.id] += pkt.size
-
+        '''
         if self.cur_size + pkt.size <= self.max_size:
             print('2')
             #if isinstance(self.start, host.Host):
@@ -51,11 +52,25 @@ class Link(object):
             self.cur_size += pkt.size
             expected_waiting_time = self.cur_size*8/(self.link_rate*1024*1024)#self.data_pkt_cnt * 8/(1024*1) + self.ack_pkt_cnt / (2048*1)  # in s
             cur_event = event_type.FetchFromBuffer(self, global_var.timestamp+expected_waiting_time)
-            print('+++++++++++++++++++++++++'+ str(global_var.timestamp+expected_waiting_time) + '-------------------------')
+            print('+++++++++++++++++++++++++' + str(global_var.timestamp+expected_waiting_time) + '-------------------------')
             heapq.heappush(global_var.queue, cur_event)
             # plot function
             self.plot_link_buffer_time.append(global_var.timestamp)
             self.plot_link_buffer.append(self.cur_size)
+        else:
+            self.num_lost_pkt += 1
+        '''
+
+        if self.cur_size + pkt.size <= self.max_size:
+            self.buffer.append(pkt)
+            self.cur_size += pkt.size
+            self.plot_link_buffer_time.append(global_var.timestamp)
+            self.plot_link_buffer.append(self.cur_size)
+            if self.link_lock == False:
+                expected_waiting_time = pkt.size*8/(self.link_rate*1024*1024)
+                cur_event = event_type.FetchFromBuffer(self, global_var.timestamp + expected_waiting_time)
+                heapq.heappush(global_var.queue, cur_event)
+                self.link_lock = True
         else:
             self.num_lost_pkt += 1
 
@@ -63,13 +78,20 @@ class Link(object):
         cur_event = event_type.FetchFromLink(self, global_var.timestamp+self.link_delay)
         heapq.heappush(global_var.queue, cur_event)
         pkt = self.buffer.popleft()
-        print('1')
         self.cur_size -= pkt.size
         self.on_the_link.append(pkt)
+
+        if self.buffer:
+            expected_waiting_time = self.buffer[0].size * 8 / (self.link_rate * 1024 * 1024)
+            cur_event = event_type.FetchFromBuffer(self, global_var.timestamp + expected_waiting_time)
+            heapq.heappush(global_var.queue, cur_event)
+            self.link_lock = True
+        else:
+            self.link_lock = False
+
         # plot function
         self.plot_link_buffer_time.append(global_var.timestamp)
         self.plot_link_buffer.append(self.cur_size)
-
         self.plot_link_rate_size += pkt.size
 
     def fetch_from_link(self):

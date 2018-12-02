@@ -67,7 +67,6 @@ class Flow(object):
             curr_link_rate = self.src.outgoing_links.link_rate
             pkt = self.sending_queue.popleft()
             start_time = global_var.timestamp + i * (8 * pkt.size/(curr_link_rate*1024*1024))
-            print('+++++++++++++++++++++++++' + str(start_time) + '+++++++++++++++++++++++++')
             event = event_type.SendFromFlow(self, pkt, start_time)
             heapq.heappush(global_var.queue, event)
             self.cnt += 1
