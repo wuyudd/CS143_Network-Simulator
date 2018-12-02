@@ -43,17 +43,19 @@ class Link(object):
             self.start.out_pkt_size[self.id] += pkt.size
 
         if self.cur_size + pkt.size <= self.max_size:
-            if isinstance(self.start, host.Host):
-                print(str(global_var.timestamp) + ', ' + self.start.id + ' send ' +  pkt.id)
+            print('2')
+            #if isinstance(self.start, host.Host):
+            #    print(str(global_var.timestamp) + ', ' + self.start.id + ' send ' +  pkt.id)
             self.buffer.append(pkt)
-            # plot function
-            self.plot_link_buffer_time.append(global_var.timestamp)
-            self.plot_link_buffer.append(self.cur_size)
             # cur_event is a new event to move packet from buffer to link
             self.cur_size += pkt.size
             expected_waiting_time = self.cur_size*8/(self.link_rate*1024*1024)#self.data_pkt_cnt * 8/(1024*1) + self.ack_pkt_cnt / (2048*1)  # in s
             cur_event = event_type.FetchFromBuffer(self, global_var.timestamp+expected_waiting_time)
+            print('+++++++++++++++++++++++++'+ str(global_var.timestamp+expected_waiting_time) + '-------------------------')
             heapq.heappush(global_var.queue, cur_event)
+            # plot function
+            self.plot_link_buffer_time.append(global_var.timestamp)
+            self.plot_link_buffer.append(self.cur_size)
         else:
             self.num_lost_pkt += 1
 
@@ -61,10 +63,9 @@ class Link(object):
         cur_event = event_type.FetchFromLink(self, global_var.timestamp+self.link_delay)
         heapq.heappush(global_var.queue, cur_event)
         pkt = self.buffer.popleft()
-
+        print('1')
         self.cur_size -= pkt.size
         self.on_the_link.append(pkt)
-
         # plot function
         self.plot_link_buffer_time.append(global_var.timestamp)
         self.plot_link_buffer.append(self.cur_size)
