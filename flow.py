@@ -14,7 +14,7 @@ class Flow(object):
         self.size = size
         self.start_time = start_time
         self.cnt = 0
-        self.window_size = 128
+        self.window_size = 64
         self.packet_size = packet_size
         self.pkt_pool = {}
         self.ack_pool = {}
@@ -50,27 +50,28 @@ class Flow(object):
         self.add_event()
 
     def add_event(self):   # start_time & index
-        i = 0
-        while self.timeout_queue and self.cnt < self.window_size:
+        i = 1
+        while self.timeout_queue and self.cnt <= self.window_size:
             #index = self.num_pkt_send
             curr_link_rate = self.src.outgoing_links.link_rate
             pkt = self.timeout_queue.popleft()
-            start_time = global_var.timestamp + i * (8 * pkt.size / (curr_link_rate * 1024 * 1024))
-            print('+++++++++++++++++++++++++'+str(start_time)+'+++++++++++++++++++++++++')
+            start_time = global_var.timestamp + i * (8 * pkt.size/(curr_link_rate*1024*1024))*100
             event = event_type.SendFromFlow(self, pkt, start_time)
             heapq.heappush(global_var.queue, event)
             self.cnt += 1
             i += 1
 
-        while self.sending_queue and self.cnt < self.window_size:
+        while self.sending_queue and self.cnt <= self.window_size:
             #index = self.num_pkt_send
             curr_link_rate = self.src.outgoing_links.link_rate
             pkt = self.sending_queue.popleft()
-            start_time = global_var.timestamp + i * (8 * pkt.size/(curr_link_rate*1024*1024))
+            start_time = global_var.timestamp + i * (8 * pkt.size/(curr_link_rate*1024*1024))*100
             event = event_type.SendFromFlow(self, pkt, start_time)
             heapq.heappush(global_var.queue, event)
             self.cnt += 1
             i += 1
+
+
     def time_out(self, pkt):
         if not self.ack_pool[pkt.id]:
             self.cnt -= 1   # need to resend pck
