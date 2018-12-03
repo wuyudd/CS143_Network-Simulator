@@ -65,7 +65,7 @@ class Link(object):
             self.buffer.append(pkt)
             self.cur_size += pkt.size
             self.plot_link_buffer_time.append(global_var.timestamp)
-            self.plot_link_buffer.append(self.cur_size)
+            self.plot_link_buffer.append(self.cur_size/1024)
             if self.link_lock == False:
                 expected_waiting_time = pkt.size*8/(self.link_rate*1024*1024)
                 cur_event = event_type.FetchFromBuffer(self, global_var.timestamp + expected_waiting_time)
@@ -91,7 +91,7 @@ class Link(object):
 
         # plot function
         self.plot_link_buffer_time.append(global_var.timestamp)
-        self.plot_link_buffer.append(self.cur_size)
+        self.plot_link_buffer.append(self.cur_size/1024)
         self.plot_link_rate_size += pkt.size
 
     def fetch_from_link(self):

@@ -21,7 +21,7 @@ class Visulization(object):
                 plt.subplot(prefix+i)
                 plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=3)
                 plt.xlabel('time(s)')
-                plt.ylabel(linkid + '_Buffer')
+                plt.ylabel(linkid + '_Buffer / KB')
                 i += 1
         plt.show()
 
@@ -34,7 +34,7 @@ class Visulization(object):
                 plt.subplot(prefix+i)
                 plt.scatter(global_var.plot_link_rate_time_axis, link.plot_link_rate, s=3)
                 plt.xlabel('time(s)')
-                plt.ylabel(linkid)
+                plt.ylabel(linkid + ' / Mbps')
                 i += 1
         plt.show()
 
