@@ -11,7 +11,7 @@ class Host(Node):
         self.flows = {}
         self.incoming_links = None
         self.outgoing_links = None
-        self.neightbors = {}
+        self.neighbors = {}
 
     def send_packet(self, to_send_pkt):
         self.outgoing_links.add_packet_to_buffer(to_send_pkt)
@@ -25,7 +25,7 @@ class Host(Node):
         if pkt.type == "data_ack":
             curr_flow_id = pkt.id.split("pkt")[0]
             self.flows[curr_flow_id].receive_ack(pkt)
-        if type == "hello":
+        if pkt.type == "hello":
             self.neighbors[link.start.id] = self.outgoing_links
 
 
