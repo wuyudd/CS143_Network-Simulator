@@ -13,7 +13,7 @@ class Visulization(object):
         # print(self.links['L1'].plot_link_buffer_time)
 
         plt.figure(figsize=(16, 16))
-        plt.suptitle('link rate', fontsize=12)
+        plt.suptitle('Link_Buffer_Usage', fontsize=12)
         prefix = 610
         i = 1
         for linkid, link in self.links.items():
@@ -26,7 +26,7 @@ class Visulization(object):
         plt.show()
 
         plt.figure(figsize=(16, 16))
-        plt.suptitle('link rate', fontsize=12)
+        plt.suptitle('Link_Rate', fontsize=12)
         prefix = 610
         i = 1
         for linkid,link in self.links.items():

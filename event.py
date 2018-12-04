@@ -5,8 +5,7 @@ class Event(object):
         self.start_time = 0.0
 
     def __lt__(self, other):
-        if self.start_time == other.start_time and isinstance(self, event_type.FetchFromBuffer) and isinstance(other, event_type.SendFromFlow):
-            return True
+
         return self.start_time < other.start_time
 
     def event_action(self):

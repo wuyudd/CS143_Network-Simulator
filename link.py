@@ -57,6 +57,8 @@ class Link(object):
             self.num_lost_pkt += 1
 
     def buffer_to_link(self):
+
+
         cur_event = event_type.FetchFromLink(self, global_var.timestamp+self.link_delay)
         heapq.heappush(global_var.queue, cur_event)
         pkt = self.buffer.popleft()
@@ -73,7 +75,7 @@ class Link(object):
 
         # plot function
         self.plot_link_buffer_time.append(global_var.timestamp)
-        self.plot_link_buffer.append(self.cur_size/1024)
+        self.plot_link_buffer.append(self.cur_size / 1024)
         self.plot_link_rate_size += pkt.size
 
     def fetch_from_link(self):

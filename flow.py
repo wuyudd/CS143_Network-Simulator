@@ -14,13 +14,14 @@ class Flow(object):
         self.size = size
         self.start_time = start_time
         self.cnt = 0
-        self.window_size = 64
+        self.window_size = 128
         self.packet_size = packet_size
         self.pkt_pool = {}
         self.ack_pool = {}
         self.sending_queue = collections.deque()
         self.timeout_queue = collections.deque()
         self.num_pkt_send = 0
+        self.last_send_time = start_time
 
     def generate_packet(self):
         number_of_packet = int(self.size/self.packet_size)
@@ -50,26 +51,36 @@ class Flow(object):
         self.add_event()
 
     def add_event(self):   # start_time & index
-        i = 1
-        while self.timeout_queue and self.cnt <= self.window_size:
+        self.last_send_time = max(global_var.timestamp, self.last_send_time)
+
+        while self.timeout_queue and self.cnt < self.window_size:
             #index = self.num_pkt_send
             curr_link_rate = self.src.outgoing_links.link_rate
             pkt = self.timeout_queue.popleft()
-            start_time = global_var.timestamp + i * (8 * pkt.size/(curr_link_rate*1024*1024))*100
+
+            start_time = self.last_send_time
+            self.last_send_time = start_time + (8 * pkt.size / (curr_link_rate * 1024 * 1024))
+            print(self.last_send_time)
+
             event = event_type.SendFromFlow(self, pkt, start_time)
             heapq.heappush(global_var.queue, event)
             self.cnt += 1
-            i += 1
 
-        while self.sending_queue and self.cnt <= self.window_size:
+        while self.sending_queue and self.cnt < self.window_size:
             #index = self.num_pkt_send
             curr_link_rate = self.src.outgoing_links.link_rate
             pkt = self.sending_queue.popleft()
-            start_time = global_var.timestamp + i * (8 * pkt.size/(curr_link_rate*1024*1024))*100
+            '''
+            start_time = max(global_var.timestamp, self.last_send_time) + i * (8 * pkt.size/(curr_link_rate*1024*1024))
+            self.last_send_time = start_time + (8 * pkt.size / (curr_link_rate * 1024 * 1024))
+            '''
+            start_time = self.last_send_time
+            self.last_send_time = start_time + (8 * pkt.size / (curr_link_rate * 1024 * 1024))
+            print(self.last_send_time)
+
             event = event_type.SendFromFlow(self, pkt, start_time)
             heapq.heappush(global_var.queue, event)
             self.cnt += 1
-            i += 1
 
 
     def time_out(self, pkt):

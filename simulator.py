@@ -32,12 +32,12 @@ class Simulator(object):
         #H1 = hosts['H1']
         #H2 = hosts['H2']
 
-        for i in range(1, 6):
+        for i in range(1, 30):
             start_time = i * global_consts.UPDATEFREQUENCY
             event = event_type.UpdateRoutingInfo(routers, start_time)
             heapq.heappush(global_var.queue, event)
 
-        for i in range(300):
+        for i in range(15000):
             start_time = i * global_consts.READLINKRATEFREQUENCY
             event = event_type.CheckLinkRate(links, start_time)
             heapq.heappush(global_var.queue, event)
