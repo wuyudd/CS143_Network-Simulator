@@ -17,7 +17,7 @@ class Simulator(object):
         self.flow = {}
 
     def run(self):
-        routers, hosts, links = self.build_graph('test0.txt')
+        routers, hosts, links = self.build_graph('test1_temp.txt')
         self.display_graph(routers, hosts, links)
         flows = self.read_flow('flows.txt', hosts)
 
@@ -32,12 +32,12 @@ class Simulator(object):
         #H1 = hosts['H1']
         #H2 = hosts['H2']
 
-        for i in range(1, 30):
+        for i in range(1, 12):
             start_time = i * global_consts.UPDATEFREQUENCY
             event = event_type.UpdateRoutingInfo(routers, start_time)
             heapq.heappush(global_var.queue, event)
 
-        for i in range(15000):
+        for i in range(600):
             start_time = i * global_consts.READLINKRATEFREQUENCY
             event = event_type.CheckLinkRate(links, start_time)
             heapq.heappush(global_var.queue, event)

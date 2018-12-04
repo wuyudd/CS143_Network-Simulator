@@ -58,9 +58,12 @@ class Flow(object):
             curr_link_rate = self.src.outgoing_links.link_rate
             pkt = self.timeout_queue.popleft()
 
+            #if start_time - self.last_send_time < 0.00078125:
+            #    print('*****************************Exception********************************')
+
             start_time = self.last_send_time
             self.last_send_time = start_time + (8 * pkt.size / (curr_link_rate * 1024 * 1024))
-            print(self.last_send_time)
+            #print(self.last_send_time)
 
             event = event_type.SendFromFlow(self, pkt, start_time)
             heapq.heappush(global_var.queue, event)
@@ -70,13 +73,14 @@ class Flow(object):
             #index = self.num_pkt_send
             curr_link_rate = self.src.outgoing_links.link_rate
             pkt = self.sending_queue.popleft()
-            '''
-            start_time = max(global_var.timestamp, self.last_send_time) + i * (8 * pkt.size/(curr_link_rate*1024*1024))
-            self.last_send_time = start_time + (8 * pkt.size / (curr_link_rate * 1024 * 1024))
-            '''
+
+
+            #if start_time - self.last_send_time < 0.00078125:
+            #    print('*****************************Exception********************************')
+
             start_time = self.last_send_time
             self.last_send_time = start_time + (8 * pkt.size / (curr_link_rate * 1024 * 1024))
-            print(self.last_send_time)
+            #print(self.last_send_time)
 
             event = event_type.SendFromFlow(self, pkt, start_time)
             heapq.heappush(global_var.queue, event)
@@ -89,6 +93,4 @@ class Flow(object):
             new_pkt = Packet(pkt.id, pkt.type, pkt.size, pkt.start, pkt.end)
             self.timeout_queue.append(new_pkt)
             self.add_event()
-
-
 
