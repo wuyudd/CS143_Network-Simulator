@@ -72,11 +72,11 @@ class Flow(object):
 
         # for congestion control choice
 
-        # if self.tcp_name == "reno":
-        #     self.tcp_reno(ack)
-        #
-        # if self.tcp_name == "fast":
-        #     self.tcp_fast(ack)
+        if self.tcp_name == "reno":
+            self.tcp_reno(ack)
+
+        if self.tcp_name == "fast":
+            self.tcp_fast(ack)
 
     def add_event(self):   # start_time & index
         send_flag = False
@@ -111,10 +111,10 @@ class Flow(object):
         #     self.timeout_queue.append(new_pkt)
         #     self.add_event()
 
-            # for reno
-            #self.ss_threshold = self.window_size / 2
-            #self.window_size = 1
-            #self.curr_state = FlowState.RENOSLOWSTART
+        # for reno
+        self.ss_threshold = self.window_size / 2
+        self.window_size = 1
+        self.curr_state = FlowState.RENOSLOWSTART
 
     def tcp_reno(self, ack):
         if self.curr_state == FlowState.RENOSLOWSTART:

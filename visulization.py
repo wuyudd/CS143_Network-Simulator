@@ -31,8 +31,8 @@ class Visulization(object):
         for linkid,link in self.links.items():
             if linkid[-1] != '*':
                 plt.subplot(prefix+i)
-                #plt.scatter(global_var.plot_link_rate_time_axis, link.plot_link_rate, s=3)
-                plt.plot(global_var.plot_link_rate_time_axis, link.plot_link_rate)
+                plt.scatter(global_var.plot_link_rate_time_axis, link.plot_link_rate, s=3)
+                #plt.plot(global_var.plot_link_rate_time_axis, link.plot_link_rate)
                 plt.xlabel('time(s)')
                 plt.ylabel(linkid + ' / Mbps')
                 i += 1
