@@ -13,46 +13,41 @@ class Host(Node):
         self.incoming_links = None
         self.outgoing_links = None
         self.neighbors = {}
-        self.flow_cnt = {}
+        self.flow_lost_pkt_pointer = {}
 
         # for reno
-        self.lost_pkts_num = collections.deque()
+        self.recieved_pkts_data = []
 
     def send_packet(self, to_send_pkt):
         self.outgoing_links.add_packet_to_buffer(to_send_pkt)
 
     def receive_packet(self, pkt, link):
-        # for debug
-        #print(str(round(global_var.timestamp, 7)) + ", " + self.id + ' recieve '+ pkt.id)
-        curr_flow_id = pkt.id.split("pkt")[0]
-        self.flow_cnt[curr_flow_id] = self.flow_cnt.get(curr_flow_id, '0')
 
         if pkt.type == "data":
-            curr_pkt_num = pkt.id.split("pkt")[1]
 
-            if int(curr_pkt_num) == int(self.flow_cnt[curr_flow_id]):
-                ack_pkt = Packet(pkt.id + "ack" + str(int(self.flow_cnt[curr_flow_id]) + 1), "data_ack",global_consts.ACKSIZE, pkt.end, pkt.start)
-                self.flow_cnt[curr_flow_id] = str(int(curr_pkt_num) + 1)
-                self.outgoing_links.add_packet_to_buffer(ack_pkt)
-
+            flow_id = pkt.id.split('pkt')[0]
+            print(flow_id + ':' + 'recieve ' + pkt.id)
+            self.flow_lost_pkt_pointer[flow_id] = self.flow_lost_pkt_pointer.get(flow_id, -1)
+            pkt_ind = int(pkt.id.split('pkt')[1])
+            if pkt_ind < len(self.recieved_pkts_data):
+                self.recieved_pkts_data[pkt_ind] = 1
             else:
-                if int(curr_pkt_num) > int(self.flow_cnt[curr_flow_id]):
-                    for i in range(int(self.flow_cnt[curr_flow_id]), int(curr_pkt_num)):
-                        self.lost_pkts_num.append(i)
-                    ack_pkt = Packet(pkt.id + "ack" + str(self.lost_pkts_num[0]), "data_ack", global_consts.ACKSIZE, pkt.end, pkt.start)
-                    self.flow_cnt[curr_flow_id] = str(int(self.flow_cnt[curr_flow_id]) + 1)
-                    self.outgoing_links.add_packet_to_buffer(ack_pkt)
-
-                elif self.lost_pkts_num and int(curr_pkt_num) == self.lost_pkts_num[0]:
-                    self.lost_pkts_num.popleft()
-                    if self.lost_pkts_num:
-                        self.flow_cnt[curr_flow_id] = str(self.lost_pkts_num[0])
-                    ack_pkt = Packet(pkt.id + "ack" + str(int(self.flow_cnt[curr_flow_id])), "data_ack",
+                i = len(self.recieved_pkts_data)
+                while i < pkt_ind:
+                    self.recieved_pkts_data.append(0)
+                    i += 1
+                self.recieved_pkts_data.append(1)
+            i = self.flow_lost_pkt_pointer[flow_id]
+            while i < len(self.recieved_pkts_data) and self.recieved_pkts_data[i] != 0:
+                i += 1
+            self.flow_lost_pkt_pointer[flow_id] = i
+            return_pkt = Packet(pkt.id + "ack" + str(i), "data_ack",
                                      global_consts.ACKSIZE, pkt.end, pkt.start)
-                    self.flow_cnt[curr_flow_id] = str(int(self.flow_cnt[curr_flow_id]) + 1)
-                    self.outgoing_links.add_packet_to_buffer(ack_pkt)
+            self.outgoing_links.add_packet_to_buffer(return_pkt)
+
 
         if pkt.type == "data_ack":
+            curr_flow_id = pkt.id.split("pkt")[0]
             self.flows[curr_flow_id].receive_ack(pkt)
 
         if pkt.type == "hello":

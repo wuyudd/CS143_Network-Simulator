@@ -28,8 +28,8 @@ class Router(Node):
             #print(self.id+'recieve'+'XXXXXXXXXXXXXXX')
             if global_var.updating_flag == True:
                 s = pkt.id.split("_")
-                print(s[1])
-                print(global_var.period)
+                #print(s[1])
+                #print(global_var.period)
                 if(int(s[1]) == global_var.period):
                     if s[2] not in self.routing_pkt_pool:
                         self.routing_pkt_pool.add(s[2])
@@ -39,7 +39,7 @@ class Router(Node):
                             if(curr_link.end != pkt.start):
                                 curr_pkt = Routing_Packet(pkt.id, "routing", global_consts.PACKETSIZE, self, curr_link.end, pkt.info)
                                 curr_link.add_packet_to_buffer(curr_pkt)
-            print(self.id + ' '+ str(len(self.routing_map)))
+            #print(self.id + ' '+ str(len(self.routing_map)))
         elif type == "hello":
             if link.id[-1] == '*':
                 self.neighbors[link.start.id] = self.outgoing_links[link.id[:len(link.id)-1]]
@@ -130,11 +130,11 @@ class Router(Node):
                 dest_list = value.split(' ')
                 for dest in dest_list:
                     self.routing_table[dest] = self.neighbors[key]
-        print(self.id + 'routing table: ')
-        print(self.routing_table)
+        #print(self.id + 'routing table: ')
+        #print(self.routing_table)
         val = self.routing_table.values()
-        print(self.routing_table['10.10.10.1'].id)
-        print(self.routing_table['10.10.10.2'].id)
+        #print(self.routing_table['10.10.10.1'].id)
+        #print(self.routing_table['10.10.10.2'].id)
         self.routing_map = {}
         self.routing_pkt_pool = set()
 

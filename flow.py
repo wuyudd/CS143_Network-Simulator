@@ -22,7 +22,7 @@ class Flow(object):
         self.size = size
         self.start_time = start_time
         self.cnt = 0
-        self.window_size = 64
+        self.window_size = 1.0
         self.packet_size = packet_size
         self.pkt_pool = {}
         self.ack_pool = {}
@@ -80,12 +80,12 @@ class Flow(object):
 
     def add_event(self):   # start_time & index
         send_flag = False
-        while self.timeout_queue and self.cnt < self.window_size:
+        while self.timeout_queue and self.cnt + 1 <= self.window_size: # ! ??
             pkt = self.timeout_queue.popleft()
             self.src.send_packet(pkt)
             self.cnt += 1
             send_flag = True
-        while self.sending_queue and self.cnt < self.window_size:
+        while self.sending_queue and self.cnt + 1 <= self.window_size:
             pkt = self.sending_queue.popleft()
             self.src.send_packet(pkt)
             # event = event_type.SendFromFlow(self, pkt, global_var.timestamp)
@@ -115,8 +115,10 @@ class Flow(object):
         self.ss_threshold = self.window_size / 2
         self.window_size = 1
         self.curr_state = FlowState.RENOSLOWSTART
+        # 一共128个包， W = 128 ACK64收到了， 然后没包发 触发不了Reno？
 
     def tcp_reno(self, ack):
+        print(str(global_var.timestamp) + ' window/outstanding:' + str(self.window_size) + '/' + str(self.cnt))
         if self.curr_state == FlowState.RENOSLOWSTART:
                 self.slow_start(ack)
         elif self.curr_state == FlowState.RENOCA:
@@ -129,12 +131,15 @@ class Flow(object):
     def slow_start(self, ack):
         if self.window_size < self.ss_threshold:
             self.window_size += 1
+            self.add_event()
         else:
             self.curr_state = FlowState.RENOCA
 
     def congestion_avoid(self, ack):
         if ack.id != self.last_ack.id:
+            self.num_dup_acks = 0
             self.window_size += 1 / self.window_size
+            self.add_event()
         else:
             self.dup_acks_cnt(ack)
 
@@ -144,6 +149,7 @@ class Flow(object):
         self.window_size = self.ss_threshold + 3
         if ack.id == self.last_ack.id:
             self.window_size += 1
+            self.add_event()
         else:
             self.curr_state = FlowState.RENOCA
             self.window_size = self.ss_threshold / 2
