@@ -7,7 +7,7 @@ import heapq
 
 class FlowInitialize(Event):
     def __init__(self, flow, start_time):
-        self.flow = flow;
+        self.flow = flow
         self.start_time = start_time
 
     def action(self):
@@ -15,16 +15,16 @@ class FlowInitialize(Event):
         self.flow.add_event()
 
 
-class SendFromFlow(Event):
-    def __init__(self, flow, pkt, start_time):
-        self.flow = flow
-        self.pkt = pkt
-        self.start_time = start_time
-
-    def action(self):
-        #prefix = 'pkt'
-        #packet = self.flow.pkt_pool[prefix + str(self.index)]
-        self.flow.send_packet(self.pkt)
+# class SendFromFlow(Event):
+#     def __init__(self, flow, pkt, start_time):
+#         self.flow = flow
+#         self.pkt = pkt
+#         self.start_time = start_time
+#
+#     def action(self):
+#         #prefix = 'pkt'
+#         #packet = self.flow.pkt_pool[prefix + str(self.index)]
+#         self.flow.send_packet(self.pkt)
 
 
 class FetchFromBuffer(Event):
@@ -46,17 +46,20 @@ class FetchFromLink(Event):
 
 
 class TimeOut(Event):
-    def __init__(self, pkt, flow, start_time):
-        self.pkt = pkt
+    def __init__(self, flow, start_time):
         self.flow = flow
         self.start_time = start_time
+        self.ack_num = self.flow.ack_num
 
     def action(self):
         # host check ACK
         # if TimeOut, change window size and send again
         #global_var.queue.append(SendPkt())
         # if not Timeout, end
-        self.flow.time_out(self.pkt)
+        if self.flow.expected_timeout == self.start_time:
+            #print('hahahahahahahahahahahhahah')
+            if self.ack_num == self.flow.ack_num:
+                self.flow.time_out()
 
 
 class UpdateRoutingInfo(Event):

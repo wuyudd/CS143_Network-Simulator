@@ -35,7 +35,6 @@ class Link(object):
         self.plot_link_rate_size = 0.0
         self.num_lost_pkt = 0.0
 
-
     def __lt__(self, other):
         return self.id < other.id
 
@@ -80,5 +79,4 @@ class Link(object):
 
     def fetch_from_link(self):
         cur_pkt = self.on_the_link.popleft()
-        #self.plot_link_rate_size += cur_pkt.size
         self.end.receive_packet(cur_pkt, self)
