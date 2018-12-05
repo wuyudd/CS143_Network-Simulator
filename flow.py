@@ -30,7 +30,8 @@ class Flow(object):
         self.num_pkt_send = 0
         self.last_send_time = start_time
         self.tcp_name = tcp_name
-        
+
+        self.expected_cur_timeout = None
         # for reno
         self.ss_threshold = 5
         self.last_pkt = Packet('0', "data_ack", 1024, '10.10.10.1', '10.10.10.2') # zombie pkt
@@ -74,38 +75,15 @@ class Flow(object):
 
 
     def add_event(self):   # start_time & index
-        self.last_send_time = max(global_var.timestamp, self.last_send_time)
-
         while self.timeout_queue and self.cnt < self.window_size:
-            #index = self.num_pkt_send
-            curr_link_rate = self.src.outgoing_links.link_rate
             pkt = self.timeout_queue.popleft()
-
-            #if start_time - self.last_send_time < 0.00078125:
-            #    print('*****************************Exception********************************')
-
-            start_time = self.last_send_time
-            self.last_send_time = start_time + (8 * pkt.size / (curr_link_rate * 1024 * 1024))
-            #print(self.last_send_time)
-
-            event = event_type.SendFromFlow(self, pkt, start_time)
+            event = event_type.SendFromFlow(self, pkt, global_var.timestamp)
             heapq.heappush(global_var.queue, event)
             self.cnt += 1
 
         while self.sending_queue and self.cnt < self.window_size:
-            #index = self.num_pkt_send
-            curr_link_rate = self.src.outgoing_links.link_rate
             pkt = self.sending_queue.popleft()
-
-
-            #if start_time - self.last_send_time < 0.00078125:
-            #    print('*****************************Exception********************************')
-
-            start_time = self.last_send_time
-            self.last_send_time = start_time + (8 * pkt.size / (curr_link_rate * 1024 * 1024))
-            #print(self.last_send_time)
-
-            event = event_type.SendFromFlow(self, pkt, start_time)
+            event = event_type.SendFromFlow(self, pkt, global_var.timestamp)
             heapq.heappush(global_var.queue, event)
             self.cnt += 1
 
