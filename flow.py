@@ -8,10 +8,10 @@ import event_type
 
 
 class FlowState(object):
-    RENOSLOWSTART = 0
-    RENOTIMEOUTSLOWSTART = 1
-    RENOFRFR = 2
-    RENOCA = 3
+    RENOSLOWSTART = "ss"
+    RENOTIMEOUTSLOWSTART = "to"
+    RENOFRFR = "frfr"
+    RENOCA = "ca"
 
 
 class Flow(object):
@@ -66,8 +66,8 @@ class Flow(object):
         self.cnt -= 1
         self.ack_num += 1
         self.add_event()
-        self.last_ack = ack
-        print(ack.id)
+        #self.last_ack = ack
+        #print(ack.id)
 
 
         # for congestion control choice
@@ -118,6 +118,11 @@ class Flow(object):
         # 一共128个包， W = 128 ACK64收到了， 然后没包发 触发不了Reno？
 
     def tcp_reno(self, ack):
+        print(".............................................")
+        print(self.last_ack.id)
+        print(ack.id)
+        print("current state: " + self.curr_state)
+        print(".............................................")
         print(str(global_var.timestamp) + ' window/outstanding:' + str(self.window_size) + '/' + str(self.cnt))
         if self.curr_state == FlowState.RENOSLOWSTART:
                 self.slow_start(ack)
@@ -125,18 +130,21 @@ class Flow(object):
             self.congestion_avoid(ack)
         elif self.curr_state == FlowState.RENOFRFR:
             self.fr_fr(ack)
-    
+
+
+
         self.last_ack = ack
 
     def slow_start(self, ack):
         if self.window_size < self.ss_threshold:
             self.window_size += 1
             self.add_event()
-        else:
+        elif self.window_size == self.ss_threshold:
+            self.add_event()
             self.curr_state = FlowState.RENOCA
 
     def congestion_avoid(self, ack):
-        if ack.id != self.last_ack.id:
+        if ack.id.split("ack")[-1] != self.last_ack.id.split("ack")[-1]: # 命名对应要改
             self.num_dup_acks = 0
             self.window_size += 1 / self.window_size
             self.add_event()
@@ -147,7 +155,7 @@ class Flow(object):
         self.ss_threshold = max(self.window_size / 2, 2)
         #self.retransmit(ack)
         self.window_size = self.ss_threshold + 3
-        if ack.id == self.last_ack.id:
+        if ack.id.split("ack")[-1] == self.last_ack.id.split("ack")[-1]:
             self.window_size += 1
             self.add_event()
         else:
