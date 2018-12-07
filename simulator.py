@@ -66,7 +66,7 @@ class Simulator(object):
         for l in links.values():
             print(l.id+' delay: '+str(l.link_delay))
             print(l.id+' lost_pkt: '+str(l.num_lost_pkt))
-        return links
+        return links, flows
 
 
     def build_graph(self, file_name):

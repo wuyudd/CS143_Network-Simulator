@@ -35,10 +35,12 @@ class Flow(object):
         self.expected_timeout = None
         self.ack_num = 0
         # for reno
-        self.ss_threshold = 5
+        self.ss_threshold = 40
         self.last_ack = Packet('0', "data_ack", 1024, '10.10.10.1', '10.10.10.2') # zombie pkt
         self.curr_state = FlowState.RENOSLOWSTART
         self.num_dup_acks = 0
+        self.plot_window_size = []
+
 
 
 
@@ -68,10 +70,9 @@ class Flow(object):
         self.add_event()
         #self.last_ack = ack
         #print(ack.id)
-
-
         # for congestion control choice
-
+        global_var.plot_window_size_pkt_timestamp.append(global_var.timestamp)
+        self.plot_window_size.append(self.window_size)
         if self.tcp_name == "reno":
             self.tcp_reno(ack)
 
@@ -136,12 +137,18 @@ class Flow(object):
         self.last_ack = ack
 
     def slow_start(self, ack):
-        if self.window_size < self.ss_threshold:
-            self.window_size += 1
-            self.add_event()
-        elif self.window_size == self.ss_threshold:
-            self.add_event()
-            self.curr_state = FlowState.RENOCA
+        if ack.id.split("ack")[-1] != self.last_ack.id.split("ack")[-1]:
+            self.num_dup_acks = 0
+            if self.window_size < self.ss_threshold:
+                self.window_size += 1
+                self.add_event()
+            elif self.window_size == self.ss_threshold:
+                self.add_event()
+                self.curr_state = FlowState.RENOCA
+        else:
+            self.dup_acks_cnt(ack)
+
+
 
     def congestion_avoid(self, ack):
         if ack.id.split("ack")[-1] != self.last_ack.id.split("ack")[-1]: # 命名对应要改
@@ -152,9 +159,6 @@ class Flow(object):
             self.dup_acks_cnt(ack)
 
     def fr_fr(self, ack):
-        self.ss_threshold = max(self.window_size / 2, 2)
-        #self.retransmit(ack)
-        self.window_size = self.ss_threshold + 3
         if ack.id.split("ack")[-1] == self.last_ack.id.split("ack")[-1]:
             self.window_size += 1
             self.add_event()
@@ -168,9 +172,13 @@ class Flow(object):
         if self.num_dup_acks == 3:
             # retransmit immediately
             # self.id + "pkt" + str(pkt.id.split("ack")[1])
+            print("3 dup acks !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             retransmit_pkt = Packet(self.id + "pkt" + str(ack.id.split("ack")[1]), "data", global_consts.PACKETSIZE, ack.end, ack.start)
             self.timeout_queue.append(retransmit_pkt)
             self.add_event()
             self.curr_state = FlowState.RENOFRFR
+
+            self.ss_threshold = max(self.window_size / 2, 2)
+            self.window_size = self.ss_threshold + 3
 
     # def tcp_fast(self, pkt):
