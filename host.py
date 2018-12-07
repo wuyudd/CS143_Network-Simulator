@@ -31,7 +31,7 @@ class Host(Node):
             # elif pkt.id != "F1pkt7900" or self.send_flag == 1:
 
             flow_id = pkt.id.split('pkt')[0]
-            print(flow_id + ':' + 'recieve ' + pkt.id)
+            #print(flow_id + ':' + 'recieve ' + pkt.id)
             self.flow_lost_pkt_pointer[flow_id] = self.flow_lost_pkt_pointer.get(flow_id, -1)
             pkt_ind = int(pkt.id.split('pkt')[1])
             if pkt_ind < len(self.recieved_pkts_data):

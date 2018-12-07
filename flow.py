@@ -39,8 +39,9 @@ class Flow(object):
         self.ss_threshold = 40
         self.last_ack = Packet('0', "data_ack", 1024, '10.10.10.1', '10.10.10.2') # zombie pkt
         self.curr_state = FlowState.RENOSLOWSTART
-        self.num_dup_acks = 0
+        self.num_dup_acks = 1
         self.plot_window_size = []
+        self.prev_ca_window_size = 0
 
     def generate_packet(self):
         # ????????
@@ -63,7 +64,7 @@ class Flow(object):
     #     return
 
     def receive_ack(self, ack):
-        print(str(global_var.timestamp) + ' ' + self.id + ':' + 'recieve ' + ack.id)
+        #print(str(global_var.timestamp) + ' ' + self.id + ':' + 'recieve ' + ack.id)
         self.recieve_ack_flag = True
         #self.last_ack = ack
         pkt_name = ack.id.split('ack')[0]
@@ -79,7 +80,6 @@ class Flow(object):
 
         if self.tcp_name == "fast":
             self.tcp_fast(ack)
-
 
     def add_event(self):   # start_time & index
         #send_flag = False
@@ -107,7 +107,7 @@ class Flow(object):
 
     def time_out(self):
         print('+++++++++++++++++++++++TimeOut+++++++++++++++++++++')
-        print(len(self.timeout_queue))
+        #print(len(self.timeout_queue))
         if int(self.last_ack.id.split('ack')[-1]) == int(self.total_number_of_packet):
             return
         last_lost_pkt_ind = int(self.last_ack.id.split('ack')[-1])
@@ -122,7 +122,7 @@ class Flow(object):
             retransmit_pkt = Packet(self.id + name, 'data', self.packet_size, self.src, self.dest)
             self.timeout_queue.append(retransmit_pkt)
             last_lost_pkt_ind += 1
-        print(len(self.timeout_queue))
+        #print(len(self.timeout_queue))
         self.add_event()
 
         # for reno
@@ -135,14 +135,12 @@ class Flow(object):
 
     def tcp_reno(self, ack):
         print(".............................................")
-        print(self.last_ack.id)
-        print(ack.id)
+        print("last ack id: " + self.last_ack.id)
+        print("current ack id: " + ack.id)
         print("current state: " + self.curr_state)
-        print(str(global_var.timestamp) + ' window/outstanding:' + str(self.window_size) + '/' + str(self.cnt))
-        print("sending queue length: ")
-        print(len(self.sending_queue))
-        print("timeout queue length: ")
-        print(len(self.timeout_queue))
+        print("timestamp: " + str(global_var.timestamp) + ' window/outstanding:' + str(self.window_size) + '/' + str(self.cnt))
+        print("sending queue length: " + str(len(self.sending_queue)))
+        print("timeout queue length: " + str(len(self.timeout_queue)))
         print(".............................................")
 
         if self.curr_state == FlowState.RENOSLOWSTART:
@@ -151,7 +149,6 @@ class Flow(object):
             self.congestion_avoid(ack)
         elif self.curr_state == FlowState.RENOFRFR:
             self.fr_fr(ack)
-
         self.last_ack = ack
 
     def slow_start(self, ack):
@@ -168,7 +165,7 @@ class Flow(object):
 
     def congestion_avoid(self, ack):
         if ack.id.split("ack")[-1] != self.last_ack.id.split("ack")[-1]: # 命名对应要改
-            self.num_dup_acks = 0
+            self.num_dup_acks = 1
             self.window_size += 1 / self.window_size
             self.add_event()
         else:
@@ -180,8 +177,8 @@ class Flow(object):
             self.add_event()
         else:
             self.curr_state = FlowState.RENOCA
-            self.window_size = self.ss_threshold / 2
-            self.num_dup_acks = 0
+            self.window_size = self.prev_ca_window_size/ 2
+            self.num_dup_acks = 1
 
     def dup_acks_cnt(self, ack):
         self.num_dup_acks += 1
@@ -193,6 +190,8 @@ class Flow(object):
             self.timeout_queue.append(retransmit_pkt)
             self.add_event()
             self.curr_state = FlowState.RENOFRFR
+
+            self.prev_ca_window_size = self.window_size
 
             self.ss_threshold = max(self.window_size / 2, 2)
             self.window_size = self.ss_threshold + 3
