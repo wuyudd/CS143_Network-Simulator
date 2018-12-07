@@ -49,16 +49,15 @@ class TimeOut(Event):
     def __init__(self, flow, start_time):
         self.flow = flow
         self.start_time = start_time
-        self.ack_num = self.flow.ack_num
 
     def action(self):
         # host check ACK
         # if TimeOut, change window size and send again
         #global_var.queue.append(SendPkt())
         # if not Timeout, end
+        #print(self.flow.recieve_ack_flag)
         if self.flow.expected_timeout == self.start_time:
-            #print('hahahahahahahahahahahhahah')
-            if self.ack_num == self.flow.ack_num:
+            if not self.flow.recieve_ack_flag:
                 self.flow.time_out()
 
 

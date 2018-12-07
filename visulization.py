@@ -45,8 +45,8 @@ class Visulization(object):
         plt.suptitle('window_size', fontsize=12)
         for flowid, flow in self.flows.items():
             plt.scatter(global_var.plot_window_size_pkt_timestamp, flow.plot_window_size)
-            plt.xlim((12, 14))
-            plt.ylim((0, 200))
+            #plt.xlim((0, 30))
+            #plt.ylim((0, 200))
             plt.xlabel('time(s)')
             plt.ylabel('window_size')
         plt.show()

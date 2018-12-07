@@ -26,29 +26,29 @@ class Host(Node):
     def receive_packet(self, pkt, link):
 
         if pkt.type == "data":
-            if pkt.id == "F1pkt7900" and self.send_flag == 0:
-                self.send_flag = 1
-            elif pkt.id != "F1pkt7900" or self.send_flag == 1:
+            # if pkt.id == "F1pkt7900" and self.send_flag == 0:
+            #     self.send_flag = 1
+            # elif pkt.id != "F1pkt7900" or self.send_flag == 1:
 
-                flow_id = pkt.id.split('pkt')[0]
-                print(flow_id + ':' + 'recieve ' + pkt.id)
-                self.flow_lost_pkt_pointer[flow_id] = self.flow_lost_pkt_pointer.get(flow_id, -1)
-                pkt_ind = int(pkt.id.split('pkt')[1])
-                if pkt_ind < len(self.recieved_pkts_data):
-                    self.recieved_pkts_data[pkt_ind] = 1
-                else:
-                    i = len(self.recieved_pkts_data)
-                    while i < pkt_ind:
-                        self.recieved_pkts_data.append(0)
-                        i += 1
-                    self.recieved_pkts_data.append(1)
-                i = self.flow_lost_pkt_pointer[flow_id]
-                while i < len(self.recieved_pkts_data) and self.recieved_pkts_data[i] != 0:
+            flow_id = pkt.id.split('pkt')[0]
+            print(flow_id + ':' + 'recieve ' + pkt.id)
+            self.flow_lost_pkt_pointer[flow_id] = self.flow_lost_pkt_pointer.get(flow_id, -1)
+            pkt_ind = int(pkt.id.split('pkt')[1])
+            if pkt_ind < len(self.recieved_pkts_data):
+                self.recieved_pkts_data[pkt_ind] = 1
+            else:
+                i = len(self.recieved_pkts_data)
+                while i < pkt_ind:
+                    self.recieved_pkts_data.append(0)
                     i += 1
-                self.flow_lost_pkt_pointer[flow_id] = i
-                return_pkt = Packet(pkt.id + "ack" + str(i), "data_ack",
-                                         global_consts.ACKSIZE, pkt.end, pkt.start)
-                self.outgoing_links.add_packet_to_buffer(return_pkt)
+                self.recieved_pkts_data.append(1)
+            i = self.flow_lost_pkt_pointer[flow_id]
+            while i < len(self.recieved_pkts_data) and self.recieved_pkts_data[i] != 0:
+                i += 1
+            self.flow_lost_pkt_pointer[flow_id] = i
+            return_pkt = Packet(pkt.id + "ack" + str(i), "data_ack",
+                                     global_consts.ACKSIZE, pkt.end, pkt.start)
+            self.outgoing_links.add_packet_to_buffer(return_pkt)
 
 
         if pkt.type == "data_ack":
