@@ -12,8 +12,8 @@ class FlowInitialize(Event):
 
     def action(self):
         self.flow.generate_packet()
-        self.flow.add_event()
-
+        self.flow.flow_send_pkt()
+        self.flow.set_new_timeout()
 
 # class SendFromFlow(Event):
 #     def __init__(self, flow, pkt, start_time):

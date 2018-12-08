@@ -41,7 +41,7 @@ class Flow(object):
         self.curr_state = FlowState.RENOSLOWSTART
         self.num_dup_acks = 1
         self.plot_window_size = []
-        self.prev_ca_window_size = 0
+        self.prev_window_size = 0
 
         #rtt 
 
@@ -62,13 +62,10 @@ class Flow(object):
     def receive_ack(self, ack):
         #print(str(global_var.timestamp) + ' ' + self.id + ':' + 'recieve ' + ack.id)
         self.recieve_ack_flag = True
-        pkt_name = ack.id.split('ack')[0]
-        if self.ack_pool[pkt_name] == False:
-            self.cnt -= 1
-        self.ack_pool[pkt_name] = True  # find the packet and mark it acknowledged
-        self.flow_send_pkt()
-        self.set_new_timeout()
-
+        ack_ind = int(ack.id.split('ack')[-1])
+        last_ack_ind = int(self.last_ack.id.split('ack')[-1])
+        self.cnt -= last_ack_ind - ack_ind
+        
         # for congestion control choice
         global_var.plot_window_size_pkt_timestamp.append(global_var.timestamp)
         self.plot_window_size.append(self.window_size)
@@ -133,19 +130,26 @@ class Flow(object):
 
     # under construction
     def slow_start(self, ack):
+        if self.window_size >= self.ss_threshold:
+            self.curr_state = FlowState.RENOCA
         if ack.id.split("ack")[-1] == self.last_ack.id.split("ack")[-1]:
             self.dup_acks_cnt(ack)
         else:
+            self.window_size += 1
             self.num_dup_acks = 1
+        self.flow_send_pkt()
+        self.set_new_timeout()
 
+        
     #under construction
     def congestion_avoid(self, ack):
         if ack.id.split("ack")[-1] != self.last_ack.id.split("ack")[-1]: # 命名对应要改
             self.num_dup_acks = 1
             self.window_size += 1 / self.window_size
-            self.flow_send_pkt()
         else:
             self.dup_acks_cnt(ack)
+        self.flow_send_pkt()
+        self.set_new_timeout()
 
     # under construction
     def fr_fr(self, ack):
@@ -153,8 +157,11 @@ class Flow(object):
             self.window_size += 1
         else:
             self.curr_state = FlowState.RENOCA
-            self.window_size = self.prev_ca_window_size/2
+            self.window_size = self.prev_window_size/2
             self.num_dup_acks = 1
+        self.flow_send_pkt()
+        self.set_new_timeout()
+        
 
 
     def dup_acks_cnt(self, ack):
@@ -166,7 +173,7 @@ class Flow(object):
             retransmit_pkt = Packet(self.id + "pkt" + str(ack.id.split("ack")[1]), "data", global_consts.PACKETSIZE, ack.end, ack.start)
             self.src.send_packet(retransmit_pkt)
             self.set_new_timeout()
-            self.prev_ca_window_size = self.window_size
+            self.prev_window_size = self.window_size
             self.window_size = 1/2*self.window_size + 3
             
 
