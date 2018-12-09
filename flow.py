@@ -110,7 +110,6 @@ class Flow(object):
             self.expected_timeout = start_time
         return
 
-
     def time_out(self, time):
         if int(self.last_ack.id.split('ack')[-1]) == int(self.total_number_of_packet):
             return
@@ -128,6 +127,7 @@ class Flow(object):
                 # then we need to keep checking if we can send the pkt
             elif self.tcp_name == 'fast':
                 return
+        return
 
 
     def tcp_reno(self, ack):
@@ -146,6 +146,7 @@ class Flow(object):
         print("sending queue length: " + str(len(self.sending_queue)))
         # print("timeout queue length: " + str(len(self.timeout_queue)))
         print(".............................................")
+        return
 
     def check_three_dup(self,ack):
         # get ack index of last ack and current ack
@@ -166,17 +167,18 @@ class Flow(object):
             self.timeout_flag = False
             self.ack_count = 1
             self.three_dup_flag = False
+        return
 
     def update_num_pkt_on_flight(self, ack):
         cur_ack_ind = int(ack.id.split('ack')[-1])
         last_ack_ind = int(self.last_ack.id.split('ack')[-1])
         self.num_on_flight_pkt -= cur_ack_ind - last_ack_ind
+        return
 
     def reno_action(self):
         if self.flow_send_pkt():
             self.set_new_timeout()
-
-
+        return
 
     def choose_reno_next_state(self):
         # we need to change the state, window size, ss_threshold here
@@ -225,3 +227,4 @@ class Flow(object):
                 self.window_size = 1
             else:
                 self.window_size += 1/self.window_size
+        return
