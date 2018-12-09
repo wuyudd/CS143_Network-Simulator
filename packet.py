@@ -6,6 +6,7 @@ class Packet(object):
         self.start = start
         self.end = end
         self.ack = 0
+        self.sending_time = 0.0
 
     def getID(self):
         return self.id

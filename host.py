@@ -14,17 +14,17 @@ class Host(Node):
         self.outgoing_links = None
         self.neighbors = {}
         self.flow_lost_pkt_pointer = {}
-
         self.send_flag = 0
 
         # for reno
         self.recieved_pkts_data = []
 
     def send_packet(self, to_send_pkt):
+        flow_id = to_send_pkt.id.split('pkt')[0]
+        print(flow_id + ':' + ' send ' + to_send_pkt.id)
         self.outgoing_links.add_packet_to_buffer(to_send_pkt)
 
     def receive_packet(self, pkt, link):
-
         if pkt.type == "data":
             # if pkt.id == "F1pkt7900" and self.send_flag == 0:
             #     self.send_flag = 1

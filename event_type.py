@@ -57,8 +57,8 @@ class TimeOut(Event):
         # if not Timeout, end
         #print(self.flow.recieve_ack_flag)
         if self.flow.expected_timeout == self.start_time:
-            if not self.flow.recieve_ack_flag:
-                self.flow.time_out()
+            #if not self.flow.recieve_ack_flag:
+            self.flow.time_out()
 
 
 class UpdateRoutingInfo(Event):
