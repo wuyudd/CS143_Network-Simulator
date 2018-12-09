@@ -53,12 +53,7 @@ class TimeOut(Event):
     def action(self):
         # host check ACK
         # if TimeOut, change window size and send again
-        #global_var.queue.append(SendPkt())
-        # if not Timeout, end
-        #print(self.flow.recieve_ack_flag)
-        if self.flow.expected_timeout == self.start_time:
-            #if not self.flow.recieve_ack_flag:
-            self.flow.time_out()
+        self.flow.time_out(self.start_time)
 
 
 class UpdateRoutingInfo(Event):

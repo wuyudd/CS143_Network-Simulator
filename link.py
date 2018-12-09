@@ -56,8 +56,6 @@ class Link(object):
             self.num_lost_pkt += 1
 
     def buffer_to_link(self):
-
-
         cur_event = event_type.FetchFromLink(self, global_var.timestamp+self.link_delay)
         heapq.heappush(global_var.queue, cur_event)
         pkt = self.buffer.popleft()

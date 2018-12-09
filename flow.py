@@ -8,6 +8,7 @@ import event_type
 
 
 class FlowState(object):
+    RENOSLOWSTART_INIT = "ss0"
     RENOSLOWSTART = "ss"
     RENOTIMEOUTSLOWSTART = "to"
     RENOFRFR = "frfr"
@@ -21,29 +22,29 @@ class Flow(object):
         self.dest = dest
         self.size = size
         self.start_time = start_time
-        self.cnt = 0
-        self.window_size = 1
         self.packet_size = packet_size
         self.pkt_pool = {}
         self.ack_pool = {}
         self.sending_queue = collections.deque()
         self.timeout_queue = collections.deque()
         self.total_number_of_packet = 0
-        self.num_pkt_send = 0
-        self.last_send_time = start_time
         self.tcp_name = tcp_name
         self.recieve_ack_flag = False
-
         self.expected_timeout = None
-        # for reno
-        self.ss_threshold = float('Inf')
-        self.last_ack = Packet('0', "data_ack", 1024, '10.10.10.1', '10.10.10.2') # zombie pkt
-        #self.curr_ack = None
-        self.curr_state = FlowState.RENOSLOWSTART
+
         self.num_dup_acks = 1
         self.plot_window_size = []
         self.prev_window_size = 0
 
+        #for reno initialization
+        self.curr_state = FlowState.RENOSLOWSTART_INIT
+        self.window_size = 1
+        self.three_dup_flag = False
+        self.num_on_flight_pkt = 0
+        self.ack_count = 1
+        self.timeout_flag = False
+        self.ss_threshold = float('Inf')
+        self.last_ack = Packet(self.id+'pkt-1ack-1', "data_ack", global_consts.ACKSIZE, self.src, self.dest)  # zombie pkt
         #rtt
         self.rtt = 0.2
 
@@ -53,7 +54,6 @@ class Flow(object):
         print(self.total_number_of_packet)
         prefix = 'pkt'
         for i in range(self.total_number_of_packet):
-            # pkt: id, type, size, end1, end2, pos
             cur_pkt = Packet(self.id + prefix + str(i), 'data', self.packet_size, self.src, self.dest)
             self.pkt_pool[prefix+str(i)] = cur_pkt
             self.ack_pool[cur_pkt.id] = False
@@ -63,11 +63,9 @@ class Flow(object):
 
     def receive_ack(self, ack):
         self.rtt = global_var.timestamp - ack.sending_time
+        print('current rtt:' + str(self.rtt))
         print(str(global_var.timestamp) + ' ' + self.id + ':' + 'recieve ' + ack.id)
         self.recieve_ack_flag = True
-        ack_ind = int(ack.id.split('ack')[-1])
-        last_ack_ind = int(self.last_ack.id.split('ack')[-1])
-        self.cnt -= 1 #ack_ind - last_ack_ind
         # for congestion control choice
         global_var.plot_window_size_pkt_timestamp.append(global_var.timestamp)
         self.plot_window_size.append(self.window_size)
@@ -80,20 +78,30 @@ class Flow(object):
     def flow_send_pkt(self):   # start_time & index
         send_flag = False
         last_ack_ind = int(self.last_ack.id.split('ack')[-1])
-        while self.sending_queue and self.cnt + 1 <= self.window_size and last_ack_ind != int(self.total_number_of_packet):
+        while self.timeout_queue and self.src.outgoing_links.cur_size < self.src.outgoing_links.max_size:
+            pkt = self.timeout_queue.popleft()
+            pkt.sending_time = global_var.timestamp
+            self.src.send_packet(pkt)
+            send_flag = True
+
+        #this is for test
+        # while self.timeout_queue:
+        #      pkt = self.timeout_queue.popleft()
+        #      pkt.sending_time = global_var.timestamp - 0.1
+        #      self.dest.receive_packet(pkt, self.dest.incoming_links)
+        #      send_flag = True
+
+        while self.sending_queue and self.num_on_flight_pkt + 1 <= self.window_size and last_ack_ind != int(self.total_number_of_packet):
             pkt = self.sending_queue.popleft()
             pkt.sending_time = global_var.timestamp
             self.src.send_packet(pkt)
-            self.cnt += 1
+            self.num_on_flight_pkt += 1
             send_flag = True
         return send_flag
 
     def set_new_timeout(self):
         last_ack_ind = int(self.last_ack.id.split('ack')[-1])
-        # cur_ack_ind = int(ack.id.split('ack')[-1])
-        # if cur_ack_ind == last_ack_ind:
-        #     return
-        start_time = global_var.timestamp + 0.2 #should change to rtt
+        start_time = global_var.timestamp + self.rtt*2
         if last_ack_ind != self.total_number_of_packet and self.expected_timeout != start_time:
             time_out_event = event_type.TimeOut(self, start_time)
             heapq.heappush(global_var.queue, time_out_event)
@@ -101,89 +109,112 @@ class Flow(object):
             self.expected_timeout = start_time
 
 
-    def time_out(self):
-        print('+++++++++++++++++++++++TimeOut+++++++++++++++++++++')
+
+    def time_out(self, time):
         if int(self.last_ack.id.split('ack')[-1]) == int(self.total_number_of_packet):
             return
-        name = 'pkt' + self.last_ack.id.split('ack')[-1]
-        retransmit_pkt = Packet(self.id + name, 'data', self.packet_size, self.src, self.dest)
-        #self.timeout_queue.append(retransmit_pkt)
-        retransmit_pkt.sending_time = global_var.timestamp
-        self.src.send_packet(retransmit_pkt)
-        self.set_new_timeout()
-        #self.cnt += 1
-        #for reno
-        self.ss_threshold = self.window_size / 2
-        self.window_size = 1
-        self.curr_state = FlowState.RENOSLOWSTART
+        if time == self.expected_timeout:
+            print('+++++++++++++++++++++++TimeOut+++++++++++++++++++++')
+            if self.tcp_name == 'reno':
+                self.timeout_flag = True
+                name = 'pkt' + self.last_ack.id.split('ack')[-1]
+                retransmit_pkt = Packet(self.id + name, 'data', self.packet_size, self.src, self.dest)
+                self.timeout_queue.append(retransmit_pkt)
+                self.choose_reno_next_state()
+                if self.flow_send_pkt():
+                    self.set_new_timeout()
+                # if we cannot send current pkt immediately
+                # then we need to keep checking if we can send the pkt
 
-        # 一共128个包， W = 128 ACK64收到了， 然后没包发 触发不了Reno？
+                # we need do more here
+            elif self.tcp_name == 'fast':
+                return
+
 
     def tcp_reno(self, ack):
-        print(".............................................")
-        print("timestamp: " + str(global_var.timestamp))
-        #print("last ack id: " + self.last_ack.id)
-        #print("current ack id: " + ack.id)
-        print("current state: " + self.curr_state)
-        print('window/outstanding:' + str(self.window_size) + '/' + str(self.cnt))
-        print("sending queue length: " + str(len(self.sending_queue)))
-        #print("timeout queue length: " + str(len(self.timeout_queue)))
-        print(".............................................")
+        # get ack index of last ack and current ack
+        cur_ack_ind = int(ack.id.split('ack')[-1])
+        last_ack_ind = int(self.last_ack.id.split('ack')[-1])
+        #check duplicate ack
+        if cur_ack_ind == last_ack_ind:
+            self.ack_count += 1
+            if self.ack_count == 3:
+                self.three_dup_flag = True
+                # retransmit last pkt immediately
+                name = 'pkt' + self.last_ack.id.split('ack')[-1]
+                retransmit_pkt = Packet(self.id + name, 'data', self.packet_size, self.src, self.dest)
+                self.timeout_queue.append(retransmit_pkt)
+        else:
+            self.timeout_flag = False
+            self.ack_count = 1
+            self.three_dup_flag = False
 
-        if self.curr_state == FlowState.RENOSLOWSTART:
-            self.slow_start(ack)
-        elif self.curr_state == FlowState.RENOCA:
-            self.congestion_avoid(ack)
-        elif self.curr_state == FlowState.RENOFRFR:
-            self.fr_fr(ack)
+        self.choose_reno_next_state()
+        # ??????????????????????????????
+        self.num_on_flight_pkt -= cur_ack_ind - last_ack_ind
+        if self.flow_send_pkt():
+            self.set_new_timeout()
+        # 3 dup 强制发， 其他状态无所谓
+        # if we cannot send current pkt immediately
+        # then we need to keep checking if we can send the pkt
+
         self.last_ack = ack
 
-    # under construction
-    def slow_start(self, ack):
-        if self.window_size >= self.ss_threshold:
-            self.curr_state = FlowState.RENOCA
-        if ack.id.split("ack")[-1] == self.last_ack.id.split("ack")[-1]:
-            self.dup_acks_cnt(ack)
-        else:
-            self.window_size += 1
-            self.num_dup_acks = 1
-        if self.flow_send_pkt() and self.last_ack.id.split('ack')[-1] != ack.id.split('ack')[-1]:
-            self.set_new_timeout()
+        print(".............................................")
+        print("timestamp: " + str(global_var.timestamp))
+        # print("last ack id: " + self.last_ack.id)
+        # print("current ack id: " + ack.id)
+        print("current state: " + self.curr_state)
+        print('outstanding/window:' + str(self.num_on_flight_pkt) + '/' + str(self.window_size))
+        print("sending queue length: " + str(len(self.sending_queue)))
+        # print("timeout queue length: " + str(len(self.timeout_queue)))
+        print(".............................................")
 
-        
-    #under construction
-    def congestion_avoid(self, ack):
-        if ack.id.split("ack")[-1] == self.last_ack.id.split("ack")[-1]: # 命名对应要改
-            self.dup_acks_cnt(ack)
-        else:
-            self.num_dup_acks = 1
-            self.window_size += 1 / self.window_size
-        if self.flow_send_pkt() and self.last_ack.id.split('ack')[-1] != ack.id.split('ack')[-1]:
-            self.set_new_timeout()
 
-    # under construction
-    def fr_fr(self, ack):
-        if ack.id.split("ack")[-1] == self.last_ack.id.split("ack")[-1]:
-            self.window_size += 1
-        else:
-            self.curr_state = FlowState.RENOCA
-            self.window_size = self.prev_window_size/2
-            self.num_dup_acks = 1
-        if self.flow_send_pkt() and self.last_ack.id.split('ack')[-1] != ack.id.split('ack')[-1]:
-            self.set_new_timeout()
+    def choose_reno_next_state(self):
+        # we need to change the state, window size, ss_threshold here
+        if self.curr_state == FlowState.RENOSLOWSTART_INIT:
+            if self.timeout_flag or self.three_dup_flag:
+                self.curr_state = FlowState.RENOSLOWSTART
+                self.ss_threshold = max(self.window_size / 2, 2)
+                self.window_size = 1
+            else:
+                self.window_size += 1
+        elif self.curr_state == FlowState.RENOSLOWSTART:
+            # if self.three_dup_flag:
+            #     self.curr_state = FlowState.RENOSLOWSTART
+            #     # do we need to change the threshold here?????????
+            #     #self.ss_threshold = self.window_size / 2
+            #     self.window_size = 1
+            #     # do we still need to keep updating the prev_window_size?
+            #     #self.prev_window_size = self.window_size
+            if self.timeout_flag:
+                # reminder: how to set timeout_flag
+                self.curr_state = FlowState.RENOSLOWSTART
+                self.window_size = 1
+            elif self.window_size >= self.ss_threshold:
+                self.curr_state = FlowState.RENOCA
+            else:
+                self.window_size += 1
 
-    def dup_acks_cnt(self, ack):
-        self.num_dup_acks += 1
-        if self.num_dup_acks == 3:
-            # retransmit immediately
-            print("3 dup acks !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            self.curr_state = FlowState.RENOFRFR
-            retransmit_pkt = Packet(self.id + "pkt" + str(ack.id.split("ack")[1]), "data", global_consts.PACKETSIZE, ack.end, ack.start)
-            retransmit_pkt.sending_time = global_var.timestamp
-            self.sending_queue.appendleft(retransmit_pkt)
-            #self.src.send_packet(retransmit_pkt)
-            #self.set_new_timeout()
-            #self.cnt += 1
-            self.prev_window_size = self.window_size
-            self.ss_threshold = max(self.window_size/2, 2)
-            self.window_size = 1/2*self.window_size + 3
+        elif self.curr_state == FlowState.RENOFRFR:
+            # reminder: how to set three_dup_flag
+            if self.three_dup_flag:
+                self.curr_state = FlowState.RENOFRFR
+                self.window_size += 1
+            else:
+                self.curr_state = FlowState.RENOCA
+                self.window_size = self.prev_window_size/2
+
+        elif self.curr_state == FlowState.RENOCA:
+            # reminder: how to set timeout_flag
+            if self.three_dup_flag:
+                self.curr_state = FlowState.RENOFRFR
+                self.prev_window_size = self.window_size
+                self.window_size = self.window_size / 2 + 3
+            elif self.timeout_flag:
+                self.curr_state = FlowState.RENOSLOWSTART
+                self.ss_threshold = max(self.window_size / 2, 2)
+                self.window_size = 1
+            else:
+                self.window_size += 1/self.window_size

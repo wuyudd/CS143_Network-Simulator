@@ -26,8 +26,8 @@ class Host(Node):
 
     def receive_packet(self, pkt, link):
         if pkt.type == "data":
-            # if pkt.id == "F1pkt7900" and self.send_flag == 0:
-            #     self.send_flag = 1
+            if pkt.id == "F1pkt365":
+                 print('Receiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiive')
             # elif pkt.id != "F1pkt7900" or self.send_flag == 1:
 
             flow_id = pkt.id.split('pkt')[0]
@@ -48,6 +48,7 @@ class Host(Node):
             self.flow_lost_pkt_pointer[flow_id] = i
             return_pkt = Packet(pkt.id + "ack" + str(i), "data_ack",
                                      global_consts.ACKSIZE, pkt.end, pkt.start)
+            return_pkt.sending_time = pkt.sending_time
             self.outgoing_links.add_packet_to_buffer(return_pkt)
 
 
