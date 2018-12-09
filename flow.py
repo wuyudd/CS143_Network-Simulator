@@ -34,6 +34,7 @@ class Flow(object):
 
         self.num_dup_acks = 1
         self.plot_window_size = []
+        self.plot_window_size_timestamp = []
         self.prev_window_size = 0
 
         #for reno initialization
@@ -67,7 +68,7 @@ class Flow(object):
         print(str(global_var.timestamp) + ' ' + self.id + ':' + 'recieve ' + ack.id)
         self.recieve_ack_flag = True
         # for congestion control choice
-        global_var.plot_window_size_pkt_timestamp.append(global_var.timestamp)
+        self.plot_window_size_timestamp.append(global_var.timestamp)
         self.plot_window_size.append(self.window_size)
 
         if self.tcp_name == "reno":
@@ -107,7 +108,7 @@ class Flow(object):
             heapq.heappush(global_var.queue, time_out_event)
             self.recieve_ack_flag = False
             self.expected_timeout = start_time
-
+        return
 
 
     def time_out(self, time):
@@ -125,39 +126,15 @@ class Flow(object):
                     self.set_new_timeout()
                 # if we cannot send current pkt immediately
                 # then we need to keep checking if we can send the pkt
-
-                # we need do more here
             elif self.tcp_name == 'fast':
                 return
 
 
     def tcp_reno(self, ack):
-        # get ack index of last ack and current ack
-        cur_ack_ind = int(ack.id.split('ack')[-1])
-        last_ack_ind = int(self.last_ack.id.split('ack')[-1])
-        #check duplicate ack
-        if cur_ack_ind == last_ack_ind:
-            self.ack_count += 1
-            if self.ack_count == 3:
-                self.three_dup_flag = True
-                # retransmit last pkt immediately
-                name = 'pkt' + self.last_ack.id.split('ack')[-1]
-                retransmit_pkt = Packet(self.id + name, 'data', self.packet_size, self.src, self.dest)
-                self.timeout_queue.append(retransmit_pkt)
-        else:
-            self.timeout_flag = False
-            self.ack_count = 1
-            self.three_dup_flag = False
-
+        self.check_three_dup(ack)
         self.choose_reno_next_state()
-        # ??????????????????????????????
-        self.num_on_flight_pkt -= cur_ack_ind - last_ack_ind
-        if self.flow_send_pkt():
-            self.set_new_timeout()
-        # 3 dup 强制发， 其他状态无所谓
-        # if we cannot send current pkt immediately
-        # then we need to keep checking if we can send the pkt
-
+        self.update_num_pkt_on_flight(ack)
+        self.reno_action()
         self.last_ack = ack
 
         print(".............................................")
@@ -169,6 +146,36 @@ class Flow(object):
         print("sending queue length: " + str(len(self.sending_queue)))
         # print("timeout queue length: " + str(len(self.timeout_queue)))
         print(".............................................")
+
+    def check_three_dup(self,ack):
+        # get ack index of last ack and current ack
+        cur_ack_ind = int(ack.id.split('ack')[-1])
+        last_ack_ind = int(self.last_ack.id.split('ack')[-1])
+        # check duplicate ack
+        # we encounter duplicate packages
+        if cur_ack_ind == last_ack_ind:
+            self.ack_count += 1
+            #we encounter 3 duplicates packages
+            if self.ack_count == 3:
+                self.three_dup_flag = True
+                # retransmit last pkt immediately
+                name = 'pkt' + self.last_ack.id.split('ack')[-1]
+                retransmit_pkt = Packet(self.id + name, 'data', self.packet_size, self.src, self.dest)
+                self.timeout_queue.append(retransmit_pkt)
+        else:
+            self.timeout_flag = False
+            self.ack_count = 1
+            self.three_dup_flag = False
+
+    def update_num_pkt_on_flight(self, ack):
+        cur_ack_ind = int(ack.id.split('ack')[-1])
+        last_ack_ind = int(self.last_ack.id.split('ack')[-1])
+        self.num_on_flight_pkt -= cur_ack_ind - last_ack_ind
+
+    def reno_action(self):
+        if self.flow_send_pkt():
+            self.set_new_timeout()
+
 
 
     def choose_reno_next_state(self):

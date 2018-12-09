@@ -17,21 +17,21 @@ class Simulator(object):
         self.flow = {}
 
     def run(self):
-        routers, hosts, links = self.build_graph('test2.txt')
+        routers, hosts, links = self.build_graph('test1_temp.txt')
         self.display_graph(routers, hosts, links)
-        flows = self.read_flow('flow2.txt', hosts)
+        flows = self.read_flow('flows.txt', hosts)
 
         event = event_type.SayHello(routers, hosts, -3)
         heapq.heappush(global_var.queue, event)
         event = event_type.UpdateRoutingInfo(routers, -2)
         heapq.heappush(global_var.queue, event)
 
-        for i in range(1, 20):
+        for i in range(1, 12):
             start_time = i * global_consts.UPDATEFREQUENCY
             event = event_type.UpdateRoutingInfo(routers, start_time)
             heapq.heappush(global_var.queue, event)
 
-        for i in range(1000):
+        for i in range(600):
             start_time = i * global_consts.READLINKRATEFREQUENCY
             event = event_type.CheckLinkRate(links, start_time)
             heapq.heappush(global_var.queue, event)
@@ -40,16 +40,12 @@ class Simulator(object):
 
 
 
-        f = flows['F1']
-        #routers['R1'].routing_table = {"10.10.10.1": links['L0*'], "10.10.10.2": links['L5']}
-        #print(routers['R1'].incoming_links)
-        #print(routers['R1'].outgoing_links)
+        #f = flows['F1']
 
         # deal with the flow, add event to queue
-        #for f in flow:
-
-        event_temp = event_type.FlowInitialize(f, f.start_time)
-        heapq.heappush(global_var.queue, event_temp)
+        for name,f in flows.items():
+            event_temp = event_type.FlowInitialize(f, f.start_time)
+            heapq.heappush(global_var.queue, event_temp)
         # print(global_var.queue)
 
         while global_var.queue:
@@ -92,7 +88,7 @@ class Simulator(object):
             links[cur[0] + '*'] = Link(cur[0] + '*', float(cur[1]), float(cur[2])*(10**-3), float(cur[3]), None, None)
             i += 1
         i += 1
-        print(node)
+        #print(node)
         # read graph
         while i < len(data) and data[i] != '#':
             cur = data[i].split('\t')

@@ -26,9 +26,9 @@ class Host(Node):
 
     def receive_packet(self, pkt, link):
         if pkt.type == "data":
-            if pkt.id == "F1pkt365":
-                 print('Receiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiive')
-            # elif pkt.id != "F1pkt7900" or self.send_flag == 1:
+            # if pkt.id == "F1pkt365":
+            #      print('Receiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiive')
+            # # elif pkt.id != "F1pkt7900" or self.send_flag == 1:
 
             flow_id = pkt.id.split('pkt')[0]
             #print(flow_id + ':' + 'recieve ' + pkt.id)
