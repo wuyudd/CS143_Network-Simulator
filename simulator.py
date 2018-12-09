@@ -17,27 +17,21 @@ class Simulator(object):
         self.flow = {}
 
     def run(self):
-        routers, hosts, links = self.build_graph('test1_temp.txt')
+        routers, hosts, links = self.build_graph('test2.txt')
         self.display_graph(routers, hosts, links)
-        flows = self.read_flow('flows.txt', hosts)
+        flows = self.read_flow('flow2.txt', hosts)
 
         event = event_type.SayHello(routers, hosts, -3)
         heapq.heappush(global_var.queue, event)
         event = event_type.UpdateRoutingInfo(routers, -2)
         heapq.heappush(global_var.queue, event)
 
-        #links['L0'].max_size = 512*1024
-        #links['L1'].link_rate = 12.5
-
-        #H1 = hosts['H1']
-        #H2 = hosts['H2']
-
-        for i in range(1, 12):
+        for i in range(1, 20):
             start_time = i * global_consts.UPDATEFREQUENCY
             event = event_type.UpdateRoutingInfo(routers, start_time)
             heapq.heappush(global_var.queue, event)
 
-        for i in range(500):
+        for i in range(1000):
             start_time = i * global_consts.READLINKRATEFREQUENCY
             event = event_type.CheckLinkRate(links, start_time)
             heapq.heappush(global_var.queue, event)
@@ -98,7 +92,7 @@ class Simulator(object):
             links[cur[0] + '*'] = Link(cur[0] + '*', float(cur[1]), float(cur[2])*(10**-3), float(cur[3]), None, None)
             i += 1
         i += 1
-
+        print(node)
         # read graph
         while i < len(data) and data[i] != '#':
             cur = data[i].split('\t')
