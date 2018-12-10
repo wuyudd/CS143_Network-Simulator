@@ -84,8 +84,13 @@ class Flow(object):
 
         if self.tcp_name == "reno":
             self.tcp_reno(ack)
-        if self.tcp_name == "fast":
+        elif self.tcp_name == "fast":
             self.tcp_fast(ack)
+        elif self.tcp_name == 'None':
+            self.update_num_pkt_on_flight(ack)
+            if self.flow_send_pkt():
+                self.set_new_timeout()
+            self.last_ack = ack
 
     def flow_send_pkt(self):   # start_time & index
         send_flag = False
@@ -147,6 +152,15 @@ class Flow(object):
                     self.set_new_timeout()
                 # if we cannot send current pkt immediately
                 # then we need to keep checking if we can send the pkt
+            elif self.tcp_name == 'None':
+                print('+++++++++++++++++++++++TimeOut+++++++++++++++++++++')
+                self.timeout_flag = True
+                name = 'pkt' + self.last_ack.id.split('ack')[-1]
+                retransmit_pkt = Packet(self.id + name, 'data', self.packet_size, self.src, self.dest)
+                self.timeout_queue.append(retransmit_pkt)
+                # self.choose_reno_next_state()
+                if self.flow_send_pkt():
+                    self.set_new_timeout()
         return
 
     def tcp_reno(self, ack):
@@ -250,14 +264,13 @@ class Flow(object):
                 self.window_size += 1/self.window_size
         return
 
-
     def tcp_fast(self, ack):
         self.check_three_dup(ack)
         self.choose_fast_next_state()
         self.update_num_pkt_on_flight(ack)
         self.fast_action()
         self.last_ack = ack
-        
+
         print(".............................................")
         print("timestamp: " + str(global_var.timestamp))
         # print("last ack id: " + self.last_ack.id)
