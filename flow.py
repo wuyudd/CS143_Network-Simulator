@@ -8,11 +8,13 @@ import event_type
 
 
 class FlowState(object):
-    RENOSLOWSTART_INIT = "ss0"
-    RENOSLOWSTART = "ss"
-    RENOTIMEOUTSLOWSTART = "to"
-    RENOFRFR = "frfr"
-    RENOCA = "ca"
+    SLOWSTART_INIT = "ss0"
+    SLOWSTART = "ss"
+    TIMEOUTSLOWSTART = "to"
+    FRFR = "frfr"
+    CA = "ca"
+    
+    
 
 
 class Flow(object):
@@ -31,23 +33,32 @@ class Flow(object):
         self.tcp_name = tcp_name
         self.recieve_ack_flag = False
         self.expected_timeout = None
+        self.rtt = 0.2
 
-        self.num_dup_acks = 1
+
         self.plot_window_size = []
         self.plot_window_size_timestamp = []
-        self.prev_window_size = 0
+
 
         #for reno initialization
-        self.curr_state = FlowState.RENOSLOWSTART_INIT
+        self.curr_state = FlowState.SLOWSTART_INIT
+        self.num_dup_acks = 1
         self.window_size = 1
+        self.prev_window_size = 0
         self.three_dup_flag = False
         self.num_on_flight_pkt = 0
         self.ack_count = 1
         self.timeout_flag = False
         self.ss_threshold = float('Inf')
         self.last_ack = Packet(self.id+'pkt-1ack-1', "data_ack", global_consts.ACKSIZE, self.src, self.dest)  # zombie pkt
-        #rtt
-        self.rtt = 0.2
+
+        #for fast_initialization
+        if tcp_name == 'fast':
+            self.curr_state = FlowState.CA
+        self.FAST_ALPHA = 15
+        self.FAST_BASE_RTT = -1
+
+
 
     def generate_packet(self):
         # ????????
@@ -66,7 +77,7 @@ class Flow(object):
         self.rtt = global_var.timestamp - ack.sending_time
         print('current rtt:' + str(self.rtt))
         print(str(global_var.timestamp) + ' ' + self.id + ':' + 'recieve ' + ack.id)
-        self.recieve_ack_flag = True
+        # self.recieve_ack_flag = True
         # for congestion control choice
         self.plot_window_size_timestamp.append(global_var.timestamp)
         self.plot_window_size.append(self.window_size)
@@ -126,9 +137,17 @@ class Flow(object):
                 # if we cannot send current pkt immediately
                 # then we need to keep checking if we can send the pkt
             elif self.tcp_name == 'fast':
-                return
+                print('+++++++++++++++++++++++TimeOut+++++++++++++++++++++')
+                self.timeout_flag = True
+                name = 'pkt' + self.last_ack.id.split('ack')[-1]
+                retransmit_pkt = Packet(self.id + name, 'data', self.packet_size, self.src, self.dest)
+                self.timeout_queue.append(retransmit_pkt)
+                #self.choose_reno_next_state()
+                if self.flow_send_pkt():
+                    self.set_new_timeout()
+                # if we cannot send current pkt immediately
+                # then we need to keep checking if we can send the pkt
         return
-
 
     def tcp_reno(self, ack):
         self.check_three_dup(ack)
@@ -167,6 +186,8 @@ class Flow(object):
             self.timeout_flag = False
             self.ack_count = 1
             self.three_dup_flag = False
+            # ???????????????????????????????????
+            self.recieve_ack_flag = True
         return
 
     def update_num_pkt_on_flight(self, ack):
@@ -182,16 +203,16 @@ class Flow(object):
 
     def choose_reno_next_state(self):
         # we need to change the state, window size, ss_threshold here
-        if self.curr_state == FlowState.RENOSLOWSTART_INIT:
+        if self.curr_state == FlowState.SLOWSTART_INIT:
             if self.timeout_flag or self.three_dup_flag:
-                self.curr_state = FlowState.RENOSLOWSTART
+                self.curr_state = FlowState.SLOWSTART
                 self.ss_threshold = max(self.window_size / 2, 2)
                 self.window_size = 1
             else:
                 self.window_size += 1
-        elif self.curr_state == FlowState.RENOSLOWSTART:
+        elif self.curr_state == FlowState.SLOWSTART:
             # if self.three_dup_flag:
-            #     self.curr_state = FlowState.RENOSLOWSTART
+            #     self.curr_state = FlowState.SLOWSTART
             #     # do we need to change the threshold here?????????
             #     #self.ss_threshold = self.window_size / 2
             #     self.window_size = 1
@@ -199,32 +220,132 @@ class Flow(object):
             #     #self.prev_window_size = self.window_size
             if self.timeout_flag:
                 # reminder: how to set timeout_flag
-                self.curr_state = FlowState.RENOSLOWSTART
+                self.curr_state = FlowState.SLOWSTART
                 self.window_size = 1
             elif self.window_size >= self.ss_threshold:
-                self.curr_state = FlowState.RENOCA
+                self.curr_state = FlowState.CA
             else:
                 self.window_size += 1
 
-        elif self.curr_state == FlowState.RENOFRFR:
+        elif self.curr_state == FlowState.FRFR:
             # reminder: how to set three_dup_flag
             if self.three_dup_flag:
-                self.curr_state = FlowState.RENOFRFR
+                self.curr_state = FlowState.FRFR
                 self.window_size += 1
             else:
-                self.curr_state = FlowState.RENOCA
+                self.curr_state = FlowState.CA
                 self.window_size = self.prev_window_size/2
 
-        elif self.curr_state == FlowState.RENOCA:
+        elif self.curr_state == FlowState.CA:
             # reminder: how to set timeout_flag
             if self.three_dup_flag:
-                self.curr_state = FlowState.RENOFRFR
+                self.curr_state = FlowState.FRFR
                 self.prev_window_size = self.window_size
                 self.window_size = self.window_size / 2 + 3
             elif self.timeout_flag:
-                self.curr_state = FlowState.RENOSLOWSTART
+                self.curr_state = FlowState.SLOWSTART
                 self.ss_threshold = max(self.window_size / 2, 2)
                 self.window_size = 1
             else:
                 self.window_size += 1/self.window_size
+        return
+
+
+    def tcp_fast(self, ack):
+        self.check_three_dup(ack)
+        self.choose_fast_next_state()
+        self.update_num_pkt_on_flight(ack)
+        self.fast_action()
+        self.last_ack = ack
+        
+        print(".............................................")
+        print("timestamp: " + str(global_var.timestamp))
+        # print("last ack id: " + self.last_ack.id)
+        # print("current ack id: " + ack.id)
+        print("current state: " + self.curr_state)
+        print('outstanding/window:' + str(self.num_on_flight_pkt) + '/' + str(self.window_size))
+        print("sending queue length: " + str(len(self.sending_queue)))
+        # print("timeout queue length: " + str(len(self.timeout_queue)))
+        print(".............................................")
+        return
+
+    # def choose_fast_next_state(self):
+    #     #we need to change the state, window size, ss_threshold here
+    #     if self.curr_state == FlowState.SLOWSTART_INIT:
+    #         if self.timeout_flag or self.three_dup_flag:
+    #             self.curr_state = FlowState.SLOWSTART
+    #             self.ss_threshold = max(self.window_size / 2, 2)
+    #             self.window_size = 1
+    #         else:
+    #             self.window_size += 1
+    #     elif self.curr_state == FlowState.SLOWSTART:
+    #         if self.timeout_flag:
+    #             # reminder: how to set timeout_flag
+    #             self.curr_state = FlowState.SLOWSTART
+    #             self.window_size = 1
+    #         elif self.window_size >= self.ss_threshold:
+    #             self.curr_state = FlowState.CA
+    #         else:
+    #             self.window_size += 1
+    #
+    #     elif self.curr_state == FlowState.FRFR:
+    #         # reminder: how to set three_dup_flag
+    #         if self.three_dup_flag:
+    #             self.curr_state = FlowState.FRFR
+    #             self.window_size += 1
+    #         else:
+    #             self.curr_state = FlowState.CA
+    #             self.window_size = self.prev_window_size/2
+    #
+    #     elif self.curr_state == FlowState.CA:
+    #         # initialization
+    #         if self.FAST_BASE_RTT == -1:
+    #             self.window_size = self.window_size + self.FAST_ALPHA
+    #             self.FAST_BASE_RTT = self.rtt
+    #         if self.three_dup_flag:
+    #             self.curr_state = FlowState.FRFR
+    #             self.prev_window_size = self.window_size
+    #             self.window_size = self.window_size / 2 + 3
+    #         elif self.timeout_flag:
+    #             self.curr_state = FlowState.SLOWSTART
+    #             self.ss_threshold = max(self.window_size / 2, 2)
+    #             self.window_size = 1
+    #         else:
+    #             # self.window_size = self.FAST_GAMMA*((self.FAST_BASE_RTT / self.rtt) * self.window_size + self.FAST_ALPHA) + (1-self.FAST_GAMMA)*self.window_size
+    #             self.window_size = (self.FAST_BASE_RTT / self.rtt) * self.window_size + self.FAST_ALPHA
+    #             self.FAST_BASE_RTT = min(self.FAST_BASE_RTT, self.rtt)
+    #     return
+
+    def choose_fast_next_state(self):
+        #we need to change the state, window size, ss_threshold here
+        if self.curr_state == FlowState.FRFR:
+            # reminder: how to set three_dup_flag
+            if self.three_dup_flag:
+                self.curr_state = FlowState.FRFR
+                self.window_size += 1
+            else:
+                self.curr_state = FlowState.CA
+                self.window_size = self.prev_window_size/2
+        elif self.curr_state == FlowState.CA:
+            # initialization
+            if self.FAST_BASE_RTT == -1:
+                self.window_size = self.window_size + self.FAST_ALPHA
+                self.FAST_BASE_RTT = self.rtt
+            if self.three_dup_flag:
+                self.curr_state = FlowState.FRFR
+                self.prev_window_size = self.window_size
+                self.window_size = self.window_size / 2 + 3
+            elif self.timeout_flag:
+                self.curr_state = FlowState.SLOWSTART
+                self.window_size = 1
+            else:
+                # self.window_size = self.FAST_GAMMA*((self.FAST_BASE_RTT / self.rtt) * self.window_size + self.FAST_ALPHA) + (1-self.FAST_GAMMA)*self.window_size
+                self.window_size = (self.FAST_BASE_RTT / self.rtt) * self.window_size + self.FAST_ALPHA
+                self.FAST_BASE_RTT = min(self.FAST_BASE_RTT, self.rtt)
+        return
+
+
+    def fast_action(self):
+        if self.flow_send_pkt():
+            self.set_new_timeout()
         return

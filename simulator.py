@@ -26,12 +26,12 @@ class Simulator(object):
         event = event_type.UpdateRoutingInfo(routers, -2)
         heapq.heappush(global_var.queue, event)
 
-        for i in range(1, 12):
+        for i in range(1, 60):
             start_time = i * global_consts.UPDATEFREQUENCY
             event = event_type.UpdateRoutingInfo(routers, start_time)
             heapq.heappush(global_var.queue, event)
 
-        for i in range(600):
+        for i in range(120):
             start_time = i * global_consts.READLINKRATEFREQUENCY
             event = event_type.CheckLinkRate(links, start_time)
             heapq.heappush(global_var.queue, event)
@@ -155,7 +155,7 @@ class Simulator(object):
         while i < len(data):
             cur = data[i].split('\t')
             #print(cur)
-            flows[cur[0]] = Flow(cur[0], hosts[cur[1]], hosts[cur[2]], float(cur[3]), float(cur[4]), global_consts.PACKETSIZE, "reno")
+            flows[cur[0]] = Flow(cur[0], hosts[cur[1]], hosts[cur[2]], float(cur[3]), float(cur[4]), global_consts.PACKETSIZE, "fast")
             hosts[cur[1]].flows[cur[0]] = flows[cur[0]]
             i += 1
         return flows
