@@ -11,23 +11,23 @@ class Visulization(object):
 
     def plot_link_buffer_usage(self):
         print("================================")
-        ''''
-        under construction
-        num_of_links = len(self.links)/2
-        while num_of_links % 4 != 0:
-            plt.figure(figsize=(16, 16))
-            plt.suptitle('Link_Buffer_Usage', fontsize=12)
-            prefix = 410
-            i = 1
-            for linkid, link in self.links.items():
-                if linkid[-1] != '*':
-                    plt.subplot(prefix+i)
-                    plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=3)
-                    plt.xlabel('time(s)')
-                    plt.ylabel(linkid + '_Buffer / KB')
-                    i += 1
-            plt.show()
-            
+
+        #under construction
+        #num_of_links = len(self.links)/2
+        #while num_of_links % 4 != 0:
+        plt.figure(figsize=(16, 16))
+        plt.suptitle('Link_Buffer_Usage', fontsize=12)
+        prefix = 610
+        i = 1
+        for linkid, link in self.links.items():
+            if linkid[-1] != '*':
+                plt.subplot(prefix+i)
+                plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=3)
+                #plt.xlabel('time(s)')
+                #plt.ylabel(linkid + '_Buffer / KB')
+                i += 1
+        plt.show()
+
         plt.figure(figsize=(16, 16))
         plt.suptitle('Link_Rate', fontsize=12)
         prefix = 610
@@ -37,11 +37,11 @@ class Visulization(object):
                 plt.subplot(prefix+i)
                 plt.scatter(global_var.plot_link_rate_time_axis, link.plot_link_rate, s=3)
                 #plt.plot(global_var.plot_link_rate_time_axis, link.plot_link_rate)
-                plt.xlabel('time(s)')
-                plt.ylabel(linkid + ' / Mbps')
+                #plt.xlabel('time(s)')
+                #plt.ylabel(linkid + ' / Mbps')
                 i += 1
-            plt.show()
-        '''
+        plt.show()
+
         return
 
     def plot_window_size(self):
@@ -55,6 +55,16 @@ class Visulization(object):
             plt.ylabel(flowid +' window_size')
             plt.show()
 
+    def plot_rtt(self):
+        plt.figure(figsize=(16, 16))
+        plt.suptitle('rtt', fontsize=12)
+        for flowid, flow in self.flows.items():
+            plt.scatter(flow.plot_window_size_timestamp, flow.plot_rtt)
+            # plt.xlim((0, 800))
+            # plt.ylim((0, 1000))
+            plt.xlabel('time(s)')
+            plt.ylabel(flowid + ' rtt')
+            plt.show()
 
 
         # plt.figure(figsize=(16, 16))

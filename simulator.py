@@ -155,7 +155,7 @@ class Simulator(object):
         while i < len(data):
             cur = data[i].split('\t')
             #print(cur)
-            flows[cur[0]] = Flow(cur[0], hosts[cur[1]], hosts[cur[2]], float(cur[3]), float(cur[4]), global_consts.PACKETSIZE, "fast")
+            flows[cur[0]] = Flow(cur[0], hosts[cur[1]], hosts[cur[2]], float(cur[3]), float(cur[4]), global_consts.PACKETSIZE, "None")
             hosts[cur[1]].flows[cur[0]] = flows[cur[0]]
             i += 1
         return flows

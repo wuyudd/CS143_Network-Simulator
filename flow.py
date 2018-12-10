@@ -39,11 +39,13 @@ class Flow(object):
         self.plot_window_size = []
         self.plot_window_size_timestamp = []
 
+        self.plot_rtt = []
+
 
         #for reno initialization
         self.curr_state = FlowState.SLOWSTART_INIT
         self.num_dup_acks = 1
-        self.window_size = 1
+        self.window_size = 64
         self.prev_window_size = 0
         self.three_dup_flag = False
         self.num_on_flight_pkt = 0
@@ -81,6 +83,7 @@ class Flow(object):
         # for congestion control choice
         self.plot_window_size_timestamp.append(global_var.timestamp)
         self.plot_window_size.append(self.window_size)
+        self.plot_rtt.append(self.rtt)
 
         if self.tcp_name == "reno":
             self.tcp_reno(ack)

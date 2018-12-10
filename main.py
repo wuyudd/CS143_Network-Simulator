@@ -10,5 +10,6 @@ if __name__ == '__main__':
     vis = Visulization(sim_links, sim_flows)
     vis.plot_link_buffer_usage()
     vis.plot_window_size()
+    vis.plot_rtt()
 
 
