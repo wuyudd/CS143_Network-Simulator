@@ -15,8 +15,6 @@ class Host(Node):
         self.neighbors = {}  # key is the neighbor node, value is the outgoing_links
         self.flow_lost_pkt_pointer = {} # key is the corresponding flow, value is the first 0's position(this position's pkt has not been acknowleged) in the recieved_pkts_data list
         self.send_flag = 0
-
-        # for reno
         self.recieved_pkts_data = []
         # a list to record whether a pck is received, 0: not received, 1: received
 
