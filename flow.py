@@ -129,42 +129,27 @@ class Flow(object):
         return
 
     def time_out(self, time):
-        if int(self.last_ack.id.split('ack')[-1]) == int(self.total_number_of_packet):
+        if self.finished:
             return
         if time == self.expected_timeout:
             print('+++++++++++++++++++++++TimeOut+++++++++++++++++++++')
+            self.timeout_flag = True
+            name = 'pkt' + self.last_ack.id.split('ack')[-1]
+            retransmit_pkt = Packet(self.id + name, 'data', self.packet_size, self.src, self.dest)
+            self.timeout_queue.append(retransmit_pkt)
+
             if self.tcp_name == 'Reno':
-                self.timeout_flag = True
-                name = 'pkt' + self.last_ack.id.split('ack')[-1]
-                retransmit_pkt = Packet(self.id + name, 'data', self.packet_size, self.src, self.dest)
-                self.timeout_queue.append(retransmit_pkt)
                 self.choose_reno_next_state()
-                if self.flow_send_pkt():
-                    self.set_new_timeout()
-                # if we cannot send current pkt immediately
-                # then we need to keep checking if we can send the pkt
+                self.reno_action()
             elif self.tcp_name == 'FAST':
-                print('+++++++++++++++++++++++TimeOut+++++++++++++++++++++')
-                self.timeout_flag = True
-                name = 'pkt' + self.last_ack.id.split('ack')[-1]
-                retransmit_pkt = Packet(self.id + name, 'data', self.packet_size, self.src, self.dest)
-                self.timeout_queue.append(retransmit_pkt)
                 self.choose_fast_next_state()
-                if self.flow_send_pkt():
-                    self.set_new_timeout()
-                # if we cannot send current pkt immediately
-                # then we need to keep checking if we can send the pkt
+                self.fast_action()
             elif self.tcp_name == 'None':
-                print('+++++++++++++++++++++++TimeOut+++++++++++++++++++++')
-                self.timeout_flag = True
-                name = 'pkt' + self.last_ack.id.split('ack')[-1]
-                retransmit_pkt = Packet(self.id + name, 'data', self.packet_size, self.src, self.dest)
-                self.timeout_queue.append(retransmit_pkt)
                 if self.flow_send_pkt():
                     self.set_new_timeout()
         return
 
-# TCP RENO
+    # TCP RENO
     def tcp_reno(self, ack):
         self.check_three_dup(ack)
         self.choose_reno_next_state()

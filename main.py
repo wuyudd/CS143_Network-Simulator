@@ -6,7 +6,7 @@ import global_var
 
 if __name__ == '__main__':
     sim = Simulator()
-    sim_links, sim_flows = sim.run('test2.txt', 'flows2.txt')
+    sim_links, sim_flows = sim.run('test1.txt', 'flows1.txt')
     vis = Visulization(sim_links, sim_flows)
     #vis.plot_link_buffer_usage()
     vis.plot_window_size()
