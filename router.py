@@ -14,22 +14,20 @@ class Router(Node):
         self.outgoing_links = {}
         self.neighbors = {}
         self.routing_table = {}
-        self.routing_pkt_pool = set()
+        self.routing_pkt_pool = set()  # a set to store routing_pkt's id that has been received
         self.routing_map = {}
         self.num_edge_on_map = 0
         self.out_pkt_size = {}
 
     def receive_packet(self, pkt, link):
         type = pkt.type
-        #print(self.id + ':'+ 'Recieve ' + pkt.id + '@ P' + str(global_var.period))
         if type == "data" or type == "data_ack":
             self.send(pkt)
-        elif type == "routing": # bypass routing information
-            #print(self.id+'recieve'+'XXXXXXXXXXXXXXX')
+        elif type == "routing":
+            # update routing information
             if global_var.updating_flag == True:
                 s = pkt.id.split("_")
-                #print(s[1])
-                #print(global_var.period)
+                # s[1] is which updating_routing_information period this pkt is in
                 if(int(s[1]) == global_var.period):
                     if s[2] not in self.routing_pkt_pool:
                         self.routing_pkt_pool.add(s[2])
@@ -39,8 +37,9 @@ class Router(Node):
                             if(curr_link.end != pkt.start):
                                 curr_pkt = Routing_Packet(pkt.id, "routing", global_consts.PACKETSIZE, self, curr_link.end, pkt.info)
                                 curr_link.add_packet_to_buffer(curr_pkt)
-            #print(self.id + ' '+ str(len(self.routing_map)))
+
         elif type == "hello":
+            # * means the link is a incoming link
             if link.id[-1] == '*':
                 self.neighbors[link.start.id] = self.outgoing_links[link.id[:len(link.id)-1]]
                 self.out_pkt_size[link.id[:len(link.id)-1]] = 0
@@ -56,11 +55,12 @@ class Router(Node):
 
     def broadcast_routing_pkt(self):
         info = {}
+        # go through every outgoing links, construct info and weight map
         for curr_link in self.outgoing_links.values():
             weight = curr_link.link_delay + global_consts.WEIGHTFACTOR * self.out_pkt_size[curr_link.id]/curr_link.link_rate
             info[(self.id, curr_link.end.id)] = weight
             self.routing_map[(self.id, curr_link.end.id)] = weight
-
+        # go through every outgoing links, construct corresponding routing_pkt with weight information and add it to buffer
         for curr_link in self.outgoing_links.values():
             id = "ROUTINGINFO@P_" + str(global_var.period)+ "_" + self.id
             routing_pkt = Routing_Packet(id, "routing", global_consts.PACKETSIZE, self, curr_link.end, info)
@@ -70,7 +70,7 @@ class Router(Node):
         for key in self.out_pkt_size.keys():
             self.out_pkt_size[key] = 0
     
-
+    # go through every outgoing links, construct hello_pkt to pass the graph's structure information
     def say_hello(self):
         for curr_link in self.outgoing_links.values():
             hello_pkt = Packet("HelloFrom"+self.id, "hello", global_consts.ACKSIZE, self, curr_link.end)
@@ -80,8 +80,6 @@ class Router(Node):
     def dijkstra(self):
         if global_var.period == 0:
             self.num_edge_on_map = len(self.routing_map)
-        #print('!!!!!!!!!!!!!!'+str(len(self.routing_map)))
-        #print(self.num_edge_on_map)
         if len(self.routing_map) != self.num_edge_on_map:
             return
         known_dist = {}
@@ -100,17 +98,12 @@ class Router(Node):
         cur_node = self.id
         cur_dist = 0
         queue = []
-        #print(self.routing_map)
 
         while unknow_dist:
-            # print("================")
-            # print(unknow_dist)
-            # print(known_dist)
             for s,e in self.routing_map.keys():
                 if s == cur_node and e not in known_dist:
                     heapq.heappush(queue, (self.routing_map[(s,e)]+cur_dist,(s,e)))
             cur_path_length, cur_link = heapq.heappop(queue)
-            #print(cur_link)
             if cur_link[1] not in known_dist:
                 known_dist[cur_link[1]] = cur_path_length
                 unknow_dist.remove(cur_link[1])
@@ -118,11 +111,8 @@ class Router(Node):
                 children[cur_link[0]] = children.get(cur_link[0], []) + [cur_link[1]]
                 cur_node = cur_link[1]
                 cur_dist = cur_path_length
-            #print(unknow_dist)
-            #print(queue)
 
         routing_info = {}
-        #recover the shortest path
         for child in children[self.id]:
             routing_info[child] = self.DFS(child, children)
         for key, value in routing_info.items():
@@ -130,11 +120,7 @@ class Router(Node):
                 dest_list = value.split(' ')
                 for dest in dest_list:
                     self.routing_table[dest] = self.neighbors[key]
-        #print(self.id + 'routing table: ')
-        #print(self.routing_table)
         val = self.routing_table.values()
-        #print(self.routing_table['10.10.10.1'].id)
-        #print(self.routing_table['10.10.10.2'].id)
         self.routing_map = {}
         self.routing_pkt_pool = set()
 
