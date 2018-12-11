@@ -107,3 +107,10 @@ class SayHello(Event):
         for host in self.hosts.values():
             host.say_hello()
 
+class FastRecordWindowSize(Event):
+    def __init__(self, flow, start_time):
+        self.flow = flow
+        self.start_time = start_time
+
+    def action(self):
+        self.flow.fast_record_window_size()
