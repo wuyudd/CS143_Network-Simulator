@@ -13,8 +13,6 @@ class FlowState(object):
     TIMEOUTSLOWSTART = "to"
     FRFR = "frfr"
     CA = "ca"
-    
-    
 
 
 class Flow(object):
