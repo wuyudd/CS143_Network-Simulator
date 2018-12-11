@@ -45,7 +45,7 @@ class Flow(object):
         #for reno initialization
         self.curr_state = FlowState.SLOWSTART_INIT
         self.num_dup_acks = 1
-        self.window_size = 64
+        self.window_size = 1
         self.prev_window_size = 0
         self.three_dup_flag = False
         self.num_on_flight_pkt = 0
@@ -269,8 +269,6 @@ class Flow(object):
 
         print(".............................................")
         print("timestamp: " + str(global_var.timestamp))
-        # print("last ack id: " + self.last_ack.id)
-        # print("current ack id: " + ack.id)
         print("current state: " + self.curr_state)
         print('outstanding/window:' + str(self.num_on_flight_pkt) + '/' + str(self.window_size))
         print("sending queue length: " + str(len(self.sending_queue)))
@@ -287,7 +285,7 @@ class Flow(object):
                 # reminder: how to set timeout_flag
                 self.curr_state = FlowState.SLOWSTART
                 self.window_size = 1
-            elif self.window_size >= self.FAST_ALPHA - 5:
+            elif self.window_size >= self.FAST_ALPHA - 7:
                 self.curr_state = FlowState.CA
             else:
                 if self.fast_window_size_update_flag:
@@ -317,7 +315,7 @@ class Flow(object):
                 self.window_size = 1
             else:
                 if self.fast_window_size_update_flag:
-                    self.window_size += self.FAST_BASE_RTT / self.temp_rtt + self.FAST_ALPHA / self.prev_window_size
+                    self.window_size += self.FAST_BASE_RTT / self.temp_rtt - 1 + self.FAST_ALPHA / self.prev_window_size
                 self.FAST_BASE_RTT = min(self.FAST_BASE_RTT, self.rtt)
         return
 

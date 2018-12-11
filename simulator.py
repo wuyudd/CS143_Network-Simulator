@@ -27,7 +27,7 @@ class Simulator(object):
         heapq.heappush(global_var.queue, event)
 
         for i in range(1, 60):
-            start_time = i * global_consts.UPDATEFREQUENCY
+            start_time = 1+i * global_consts.UPDATEFREQUENCY
             event = event_type.UpdateRoutingInfo(routers, start_time)
             heapq.heappush(global_var.queue, event)
 
