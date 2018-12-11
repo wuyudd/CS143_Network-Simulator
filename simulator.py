@@ -37,11 +37,6 @@ class Simulator(object):
             heapq.heappush(global_var.queue, event)
             global_var.plot_link_rate_time_axis.append(i * global_consts.READLINKRATEFREQUENCY)
 
-
-
-
-        #f = flows['F1']
-
         # deal with the flow, add event to queue
         for name,f in flows.items():
             event_temp = event_type.FlowInitialize(f, f.start_time)
@@ -59,7 +54,7 @@ class Simulator(object):
             print(l.id+' lost_pkt: '+str(l.num_lost_pkt))
         return links, flows
 
-
+    # This function read the txt file and construct the graph structure
     def build_graph(self, file_name):
         data = [line.strip('\n') for line in open(file_name, 'r')]
         i = 1
@@ -146,7 +141,7 @@ class Simulator(object):
                 routers[key] = node[key]
         return routers, hosts, links
 
-
+    # This function read the txt file and construct the flows
     def read_flow(self, file_name, hosts):
         data = [line.strip('\n') for line in open(file_name, 'r')]
         #print(data)
@@ -159,7 +154,7 @@ class Simulator(object):
             hosts[cur[1]].flows[cur[0]] = flows[cur[0]]
             i += 1
         return flows
-
+    # This function display the connection of the graph
     def display_graph(self,routers, hosts, links):
         for link in links.values():
             print(link.id+': '+link.start.id+'->'+link.end.id)
