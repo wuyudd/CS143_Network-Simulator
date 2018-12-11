@@ -16,8 +16,7 @@ class FlowState(object):
     FRFR = "frfr"
     # congestion avoidance
     CA = "ca"
-    
-    
+
 class Flow(object):
     def __init__(self, id, src, dest, size, start_time, packet_size, tcp_name):
         # flow ID

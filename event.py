@@ -1,4 +1,7 @@
 import event_type
+
+# this class create a event type, specific information is in event_type file
+# event_type class inherit from event
 class Event(object):
 
     def __init__(self):
