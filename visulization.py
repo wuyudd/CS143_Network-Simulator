@@ -4,80 +4,125 @@ from router import *
 from flow import *
 from simulator import *
 
+
 class Visulization(object):
-    def __init__(self, links, flows):
+    def __init__(self, links, flows, graph_file_name):
         self.links = links
         self.flows = flows
+        self.graph_file_name = graph_file_name
+        self.point_size = 20
 
     def plot_link_buffer_usage(self):
-        print("================================")
-
-        #under construction
-        #num_of_links = len(self.links)/2
-        #while num_of_links % 4 != 0:
-        plt.figure(figsize=(16, 16))
-        plt.suptitle('Link_Buffer_Usage', fontsize=12)
-        prefix = 610
-        i = 1
-        for linkid, link in self.links.items():
-            if linkid[-1] != '*':
-                plt.subplot(prefix+i)
-                plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=3)
-                #plt.xlabel('time(s)')
-                #plt.ylabel(linkid + '_Buffer / KB')
-                i += 1
+        if self.graph_file_name == 'test0.txt':
+            plt.figure(figsize=(30, 8))
+            for link_id, link in self.links.items():
+                if link_id == 'L1':
+                    plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=self.point_size, label=link_id)
+        elif self.graph_file_name == 'test1.txt':
+            plt.figure(figsize=(30, 8))
+            for link_id, link in self.links.items():
+                if link_id == 'L1':
+                    plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=self.point_size, label=link_id)
+                if link_id == 'L2':
+                    plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=self.point_size, label=link_id)
+        elif self.graph_file_name == 'test2.txt':
+            plt.figure(figsize=(30, 8))
+            for link_id, link in self.links.items():
+                if link_id == 'L1':
+                    plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=self.point_size, label=link_id)
+                if link_id == 'L2':
+                    plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=self.point_size, label=link_id)
+                if link_id == 'L3':
+                    plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=self.point_size, label=link_id)
+        plt.legend(fontsize=24)
+        plt.xlabel('time/s', fontsize=24)
+        plt.ylabel('link_buffer_usgae/KB', fontsize=24)
+        plt.xticks(fontsize=24)
+        plt.yticks(fontsize=24)
         plt.show()
 
-        plt.figure(figsize=(16, 16))
-        plt.suptitle('Link_Rate', fontsize=12)
-        prefix = 610
-        i = 1
-        for linkid,link in self.links.items():
-            if linkid[-1] != '*':
-                plt.subplot(prefix+i)
-                plt.scatter(global_var.plot_link_rate_time_axis, link.plot_link_rate, s=3)
-                #plt.plot(global_var.plot_link_rate_time_axis, link.plot_link_rate)
-                #plt.xlabel('time(s)')
-                #plt.ylabel(linkid + ' / Mbps')
-                i += 1
+    def plot_link_rate(self):
+        if self.graph_file_name == 'test0.txt':
+            plt.figure(figsize=(30, 8))
+            for link_id, link in self.links.items():
+                if link_id == 'L1':
+                    plt.scatter(global_var.plot_link_rate_time_axis, link.plot_link_rate, s=self.point_size, label=link_id)
+        elif self.graph_file_name == 'test1.txt':
+            plt.figure(figsize=(30, 8))
+            for link_id, link in self.links.items():
+                if link_id == 'L1':
+                    plt.scatter(global_var.plot_link_rate_time_axis, link.plot_link_rate, s=self.point_size, label=link_id)
+                if link_id == 'L2':
+                    plt.scatter(global_var.plot_link_rate_time_axis, link.plot_link_rate, s=self.point_size, label=link_id)
+        elif self.graph_file_name == 'test2.txt':
+            plt.figure(figsize=(30, 8))
+            for link_id, link in self.links.items():
+                if link_id == 'L1':
+                    plt.scatter(global_var.plot_link_rate_time_axis, link.plot_link_rate, s=self.point_size, label=link_id)
+                if link_id == 'L2':
+                    plt.scatter(global_var.plot_link_rate_time_axis, link.plot_link_rate, s=self.point_size, label=link_id)
+                if link_id == 'L3':
+                    plt.scatter(global_var.plot_link_rate_time_axis, link.plot_link_rate, s=self.point_size, label=link_id)
+        else:
+            print("No such test case file found!")
+        plt.legend(fontsize=24)
+        plt.xlabel('time/s', fontsize=24)
+        plt.ylabel('link_rate/Mbps', fontsize=24)
+        plt.xticks(fontsize=24)
+        plt.yticks(fontsize=24)
         plt.show()
-
-        return
 
     def plot_window_size(self):
-        plt.figure(figsize=(16, 16))
-        plt.suptitle('window_size', fontsize=12)
-        for flowid, flow in self.flows.items():
-            plt.scatter(flow.plot_window_size_timestamp, flow.plot_window_size)
-            plt.ylim((0, 500))
-            plt.xlabel('time(s)')
-            plt.ylabel(flowid +' window_size')
-            plt.show()
+        plt.figure(figsize=(30, 8))
+        for flow_id, flow in self.flows.items():
+            plt.scatter(flow.plot_window_size_timestamp, flow.plot_window_size, s=self.point_size, label=flow_id)
+        plt.legend(fontsize=24)
+        plt.xlabel("time/s", fontsize=24)
+        plt.ylabel('window_size', fontsize=24)
+        plt.xticks(fontsize=24)
+        plt.yticks(fontsize=24)
+        plt.show()
 
     def plot_rtt(self):
-        plt.figure(figsize=(16, 16))
-        plt.suptitle('rtt', fontsize=12)
-        for flowid, flow in self.flows.items():
-            plt.scatter(flow.plot_window_size_timestamp, flow.plot_rtt)
-            # plt.xlim((0, 800))
-            # plt.ylim((0, 1000))
-            plt.xlabel('time(s)')
-            plt.ylabel(flowid + ' rtt')
-            plt.show()
+        plt.figure(figsize=(30, 8))
+        for flow_id, flow in self.flows.items():
+            plt.scatter(flow.plot_window_size_timestamp, flow.plot_rtt, s=self.point_size, label=flow_id)
+        plt.legend(fontsize=24)
+        plt.xlabel('time/s', fontsize=24)
+        plt.ylabel('RTT/s', fontsize=24)
+        plt.xticks(fontsize=24)
+        plt.yticks(fontsize=24)
+        plt.show()
+
+    def plot_flow_rate(self):
+        if self.graph_file_name == 'test0.txt':
+            plt.figure(figsize=(30, 8))
+            for link_id, link in self.links.items():
+                if link_id == 'L1':
+                    plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=self.point_size, label='flow_1')
+        elif self.graph_file_name == 'test1.txt':
+            plt.figure(figsize=(30, 8))
+            for link_id, link in self.links.items():
+                if link_id == 'L0':
+                    plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=self.point_size, label='flow_1')
+        elif self.graph_file_name == 'test2.txt':
+            plt.figure(figsize=(30, 8))
+            for link_id, link in self.links.items():
+                if link_id == 'L4':
+                    plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=self.point_size, label='flow_1')
+                if link_id == 'L0':
+                    plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=self.point_size, label='flow_2')
+                if link_id == 'L6':
+                    plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=self.point_size, label='flow_3')
+        else:
+            print("No such test case file found!")
+        plt.legend(fontsize=24)
+        plt.xlabel("time/s", fontsize=24)
+        plt.ylabel('flow_rate/Mbps', fontsize=24)
+        plt.xticks(fontsize=24)
+        plt.yticks(fontsize=24)
+        plt.show()
 
 
-        # plt.figure(figsize=(16, 16))
-        # plt.subplot(211)
-        # plt.scatter(self.links['L1'].plot_link_buffer_time, self.links['L1'].plot_link_buffer, s=3)
-        # plt.scatter(self.links['L2'].plot_link_buffer_time, self.links['L2'].plot_link_buffer, s=3)
-        # plt.xlabel('time(s)')
-        # plt.ylabel('_Buffer / KB')
-        # plt.show()
-        # plt.subplot(212)
-        # plt.scatter(global_var.plot_link_rate_time_axis, self.links['L1'].plot_link_rate, s=3)
-        # plt.scatter(global_var.plot_link_rate_time_axis, self.links['L2'].plot_link_rate, s=3)
-        # plt.xlabel('time(s)')
-        # plt.ylabel(' / Mbps')
-        # plt.show()
 
 
