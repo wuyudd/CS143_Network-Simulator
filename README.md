@@ -10,14 +10,14 @@ How to run our codes:
   Just run main.py. Done! :)
 
 If you want to change the test case, just change the 'testi.txt' and 'flowsi.txt' in the main.py line 9 and line 10.
-for test case 0:.
+for test case 0:
   sim_links, sim_flows = sim.run('test0.txt', 'flows1.txt')
-  vis = Visualization(sim_links, sim_flows, 'test0.txt')
-for test case 1:.
+  vis = Visualization(sim_links, sim_flows, 'test0.txt').
+for test case 1:
   sim_links, sim_flows = sim.run('test1.txt', 'flows1.txt')
-  vis = Visualization(sim_links, sim_flows, 'test1.txt')
-for test case 2:.
+  vis = Visualization(sim_links, sim_flows, 'test1.txt').
+for test case 2:
   sim_links, sim_flows = sim.run('test2.txt', 'flows2.txt')
-  vis = Visualization(sim_links, sim_flows, 'test2.txt')
+  vis = Visualization(sim_links, sim_flows, 'test2.txt').
 
 # End of README.md
