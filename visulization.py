@@ -9,40 +9,40 @@ class Visulization(object):
         self.links = links
         self.flows = flows
 
-    # def plot_link_buffer_usage(self):
-    #     print("================================")
-    #
-    #     #under construction
-    #     #num_of_links = len(self.links)/2
-    #     #while num_of_links % 4 != 0:
-    #     plt.figure(figsize=(16, 16))
-    #     plt.suptitle('Link_Buffer_Usage', fontsize=12)
-    #     prefix = 610
-    #     i = 1
-    #     for linkid, link in self.links.items():
-    #         if linkid[-1] != '*':
-    #             plt.subplot(prefix+i)
-    #             plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=3)
-    #             #plt.xlabel('time(s)')
-    #             #plt.ylabel(linkid + '_Buffer / KB')
-    #             i += 1
-    #     plt.show()
-    #
-    #     plt.figure(figsize=(16, 16))
-    #     plt.suptitle('Link_Rate', fontsize=12)
-    #     prefix = 610
-    #     i = 1
-    #     for linkid,link in self.links.items():
-    #         if linkid[-1] != '*':
-    #             plt.subplot(prefix+i)
-    #             plt.scatter(global_var.plot_link_rate_time_axis, link.plot_link_rate, s=3)
-    #             #plt.plot(global_var.plot_link_rate_time_axis, link.plot_link_rate)
-    #             #plt.xlabel('time(s)')
-    #             #plt.ylabel(linkid + ' / Mbps')
-    #             i += 1
-    #     plt.show()
-    #
-    #     return
+    def plot_link_buffer_usage(self):
+        print("================================")
+
+        #under construction
+        #num_of_links = len(self.links)/2
+        #while num_of_links % 4 != 0:
+        plt.figure(figsize=(16, 16))
+        plt.suptitle('Link_Buffer_Usage', fontsize=12)
+        prefix = 610
+        i = 1
+        for linkid, link in self.links.items():
+            if linkid[-1] != '*':
+                plt.subplot(prefix+i)
+                plt.scatter(link.plot_link_buffer_time, link.plot_link_buffer, s=3)
+                #plt.xlabel('time(s)')
+                #plt.ylabel(linkid + '_Buffer / KB')
+                i += 1
+        plt.show()
+
+        plt.figure(figsize=(16, 16))
+        plt.suptitle('Link_Rate', fontsize=12)
+        prefix = 610
+        i = 1
+        for linkid,link in self.links.items():
+            if linkid[-1] != '*':
+                plt.subplot(prefix+i)
+                plt.scatter(global_var.plot_link_rate_time_axis, link.plot_link_rate, s=3)
+                #plt.plot(global_var.plot_link_rate_time_axis, link.plot_link_rate)
+                #plt.xlabel('time(s)')
+                #plt.ylabel(linkid + ' / Mbps')
+                i += 1
+        plt.show()
+
+        return
 
     def plot_window_size(self):
         plt.figure(figsize=(16, 16))

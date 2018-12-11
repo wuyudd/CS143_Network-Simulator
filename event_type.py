@@ -92,7 +92,7 @@ class CheckLinkRate(Event):
         for link in self.links.values():
             link.plot_link_rate.append((link.plot_link_rate_size*8/1024**2) / global_consts.READLINKRATEFREQUENCY)
             link.plot_link_rate_size = 0
-
+        global_var.plot_link_rate_time_axis.append(self.start_time)
 
 class SayHello(Event):
     def __init__(self, routers, hosts, start_time):

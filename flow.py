@@ -34,7 +34,7 @@ class Flow(object):
         self.recieve_ack_flag = False
         self.expected_timeout = None
         self.rtt = 0.2
-
+        self.finished = 0
 
         self.plot_window_size = []
         self.plot_window_size_timestamp = []
@@ -55,7 +55,7 @@ class Flow(object):
         self.last_ack = Packet(self.id+'pkt-1ack-1', "data_ack", global_consts.ACKSIZE, self.src, self.dest)  # zombie pkt
 
         #for fast_initialization
-        if tcp_name == 'fast':
+        if tcp_name == 'FAST':
             self.curr_state = FlowState.CA
         self.FAST_ALPHA = 15
         self.FAST_BASE_RTT = -1
@@ -85,10 +85,14 @@ class Flow(object):
         self.plot_window_size_timestamp.append(global_var.timestamp)
         self.plot_window_size.append(self.window_size)
         self.plot_rtt.append(self.rtt)
+        # determine if current flow is finished
+        curr_ack_ind = int(ack.id.split('ack')[-1])
+        if curr_ack_ind == self.total_number_of_packet:
+            self.finished = 1
 
-        if self.tcp_name == "reno":
+        if self.tcp_name == "Reno":
             self.tcp_reno(ack)
-        elif self.tcp_name == "fast":
+        elif self.tcp_name == "FAST":
             self.tcp_fast(ack)
         elif self.tcp_name == 'None':
             self.update_num_pkt_on_flight(ack)
@@ -106,7 +110,7 @@ class Flow(object):
             self.src.send_packet(pkt)
             send_flag = True
 
-        while self.sending_queue and self.num_on_flight_pkt + 1 <= self.window_size and last_ack_ind != int(self.total_number_of_packet):
+        while self.sending_queue and self.num_on_flight_pkt + 1 <= self.window_size and not self.finished:
             pkt = self.sending_queue.popleft()
             pkt.sending_time = global_var.timestamp
             self.src.send_packet(pkt)
@@ -117,7 +121,7 @@ class Flow(object):
     def set_new_timeout(self):
         last_ack_ind = int(self.last_ack.id.split('ack')[-1])
         start_time = global_var.timestamp + self.rtt*2
-        if last_ack_ind != self.total_number_of_packet and self.expected_timeout != start_time:
+        if not self.finished and self.expected_timeout != start_time:
             time_out_event = event_type.TimeOut(self, start_time)
             heapq.heappush(global_var.queue, time_out_event)
             self.recieve_ack_flag = False
@@ -129,7 +133,7 @@ class Flow(object):
             return
         if time == self.expected_timeout:
             print('+++++++++++++++++++++++TimeOut+++++++++++++++++++++')
-            if self.tcp_name == 'reno':
+            if self.tcp_name == 'Reno':
                 self.timeout_flag = True
                 name = 'pkt' + self.last_ack.id.split('ack')[-1]
                 retransmit_pkt = Packet(self.id + name, 'data', self.packet_size, self.src, self.dest)
@@ -139,13 +143,13 @@ class Flow(object):
                     self.set_new_timeout()
                 # if we cannot send current pkt immediately
                 # then we need to keep checking if we can send the pkt
-            elif self.tcp_name == 'fast':
+            elif self.tcp_name == 'FAST':
                 print('+++++++++++++++++++++++TimeOut+++++++++++++++++++++')
                 self.timeout_flag = True
                 name = 'pkt' + self.last_ack.id.split('ack')[-1]
                 retransmit_pkt = Packet(self.id + name, 'data', self.packet_size, self.src, self.dest)
                 self.timeout_queue.append(retransmit_pkt)
-                #self.choose_reno_next_state()
+                self.choose_fast_next_state()
                 if self.flow_send_pkt():
                     self.set_new_timeout()
                 # if we cannot send current pkt immediately
@@ -156,7 +160,6 @@ class Flow(object):
                 name = 'pkt' + self.last_ack.id.split('ack')[-1]
                 retransmit_pkt = Packet(self.id + name, 'data', self.packet_size, self.src, self.dest)
                 self.timeout_queue.append(retransmit_pkt)
-                # self.choose_reno_next_state()
                 if self.flow_send_pkt():
                     self.set_new_timeout()
         return
@@ -256,7 +259,7 @@ class Flow(object):
                 self.window_size += 1/self.window_size
         return
 
-# TCP FAST
+    # TCP FAST
     def tcp_fast(self, ack):
         curr_ack_ind = int(ack.id.split('ack')[-1])
         if curr_ack_ind == 1:
@@ -275,8 +278,6 @@ class Flow(object):
         # print("timeout queue length: " + str(len(self.timeout_queue)))
         print(".............................................")
         return
-
-
 
     def choose_fast_next_state(self):
         #we need to change the state, window size, ss_threshold here
@@ -330,7 +331,7 @@ class Flow(object):
         self.fast_window_size_update_flag = not self.fast_window_size_update_flag
         self.temp_rtt = self.rtt
         last_ack_ind = int(self.last_ack.id.split('ack')[-1])
-        if last_ack_ind != int(self.total_number_of_packet):
+        if not self.finished:
             new_event = event_type.FastRecordWindowSize(self, global_var.timestamp+self.rtt)
             heapq.heappush(global_var.queue, new_event)
         return

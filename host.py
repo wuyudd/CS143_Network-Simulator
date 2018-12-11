@@ -15,8 +15,6 @@ class Host(Node):
         self.neighbors = {}
         self.flow_lost_pkt_pointer = {}
         self.send_flag = 0
-
-        # for reno
         self.recieved_pkts_data = []
 
     def send_packet(self, to_send_pkt):

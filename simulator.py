@@ -25,20 +25,11 @@ class Simulator(object):
         heapq.heappush(global_var.queue, event)
         event = event_type.UpdateRoutingInfo(routers, -2)
         heapq.heappush(global_var.queue, event)
-
-        for i in range(1, 60):
-            start_time = 1+i * global_consts.UPDATEFREQUENCY
-            event = event_type.UpdateRoutingInfo(routers, start_time)
-            heapq.heappush(global_var.queue, event)
-
-        for i in range(600):
-            start_time = i * global_consts.READLINKRATEFREQUENCY
-            event = event_type.CheckLinkRate(links, start_time)
-            heapq.heappush(global_var.queue, event)
-            global_var.plot_link_rate_time_axis.append(i * global_consts.READLINKRATEFREQUENCY)
+        event = event_type.CheckLinkRate(links, 0)
+        heapq.heappush(global_var.queue, event)
 
         # deal with the flow, add event to queue
-        for name,f in flows.items():
+        for name, f in flows.items():
             event_temp = event_type.FlowInitialize(f, f.start_time)
             heapq.heappush(global_var.queue, event_temp)
         # print(global_var.queue)
@@ -47,8 +38,19 @@ class Simulator(object):
             event = heapq.heappop(global_var.queue)
             global_var.timestamp = event.start_time
             event.action()
-            #print(event)
-            #print(len(global_var.queue))
+            queue_length = len(global_var.queue)
+            if isinstance(event, event_type.UpdateRoutingInfo) or isinstance(event, event_type.CheckLinkRate):
+                all_finished_sum = 0
+                for flow_id, cur_flow in flows.items():
+                    all_finished_sum += cur_flow.finished
+                if all_finished_sum != len(flows):
+                    if isinstance(event, event_type.UpdateRoutingInfo):
+                        new_event = event_type.UpdateRoutingInfo(routers, global_var.timestamp + global_consts.UPDATEFREQUENCY)
+                        heapq.heappush(global_var.queue, new_event)
+                    elif isinstance(event, event_type.CheckLinkRate):
+                        new_event = event_type.CheckLinkRate(links, global_var.timestamp + global_consts.READLINKRATEFREQUENCY)
+                        heapq.heappush(global_var.queue, new_event)
+
         for l in links.values():
             print(l.id+' delay: '+str(l.link_delay))
             print(l.id+' lost_pkt: '+str(l.num_lost_pkt))
@@ -150,7 +152,7 @@ class Simulator(object):
         while i < len(data):
             cur = data[i].split('\t')
             #print(cur)
-            flows[cur[0]] = Flow(cur[0], hosts[cur[1]], hosts[cur[2]], float(cur[3]), float(cur[4]), global_consts.PACKETSIZE, "fast")
+            flows[cur[0]] = Flow(cur[0], hosts[cur[1]], hosts[cur[2]], float(cur[3]), float(cur[4]), global_consts.PACKETSIZE, cur[5])
             hosts[cur[1]].flows[cur[0]] = flows[cur[0]]
             i += 1
         return flows
