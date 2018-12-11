@@ -1,7 +1,13 @@
+"""
+visualization.py is used for visualizing the measuring metrics.
+Supported plotting:
+    link buffer usage (KB)
+    link rate         (Mbps)
+    flow rate         (Mbps)
+    window size       (pkts)
+    RTT               (s)
+"""
 import matplotlib.pyplot as plt
-from link import *
-from router import *
-from flow import *
 from simulator import *
 
 
@@ -72,28 +78,6 @@ class Visualization(object):
         plt.yticks(fontsize=24)
         plt.show()
 
-    def plot_window_size(self):
-        plt.figure(figsize=(30, 8))
-        for flow_id, flow in self.flows.items():
-            plt.scatter(flow.plot_window_size_timestamp, flow.plot_window_size, s=self.point_size, label=flow_id)
-        plt.legend(fontsize=24)
-        plt.xlabel("time/s", fontsize=24)
-        plt.ylabel('window_size', fontsize=24)
-        plt.xticks(fontsize=24)
-        plt.yticks(fontsize=24)
-        plt.show()
-
-    def plot_rtt(self):
-        plt.figure(figsize=(30, 8))
-        for flow_id, flow in self.flows.items():
-            plt.scatter(flow.plot_window_size_timestamp, flow.plot_rtt, s=self.point_size, label=flow_id)
-        plt.legend(fontsize=24)
-        plt.xlabel('time/s', fontsize=24)
-        plt.ylabel('RTT/s', fontsize=24)
-        plt.xticks(fontsize=24)
-        plt.yticks(fontsize=24)
-        plt.show()
-
     def plot_flow_rate(self):
         if self.graph_file_name == 'test0.txt':
             plt.figure(figsize=(30, 8))
@@ -123,6 +107,27 @@ class Visualization(object):
         plt.yticks(fontsize=24)
         plt.show()
 
+    def plot_window_size(self):
+        plt.figure(figsize=(30, 8))
+        for flow_id, flow in self.flows.items():
+            plt.scatter(flow.plot_window_size_timestamp, flow.plot_window_size, s=self.point_size, label=flow_id)
+        plt.legend(fontsize=24)
+        plt.xlabel("time/s", fontsize=24)
+        plt.ylabel('window_size/pkts', fontsize=24)
+        plt.xticks(fontsize=24)
+        plt.yticks(fontsize=24)
+        plt.show()
+
+    def plot_rtt(self):
+        plt.figure(figsize=(30, 8))
+        for flow_id, flow in self.flows.items():
+            plt.scatter(flow.plot_window_size_timestamp, flow.plot_rtt, s=self.point_size, label=flow_id)
+        plt.legend(fontsize=24)
+        plt.xlabel('time/s', fontsize=24)
+        plt.ylabel('RTT/s', fontsize=24)
+        plt.xticks(fontsize=24)
+        plt.yticks(fontsize=24)
+        plt.show()
 
 
 
