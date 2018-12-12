@@ -1,9 +1,10 @@
+"""
+host.py maintains the Host class.
+Host has the functions including send_packet and receive_packet, and say_hello for routing information.
+"""
 from node import *
 from packet import *
-from flow import *
-import global_var
 import global_consts
-import collections
 
 
 class Host(Node):
@@ -20,7 +21,6 @@ class Host(Node):
 
     def send_packet(self, to_send_pkt):
         flow_id = to_send_pkt.id.split('pkt')[0]
-        print(flow_id + ':' + ' send ' + to_send_pkt.id)
         self.outgoing_links.add_packet_to_buffer(to_send_pkt)
 
     def receive_packet(self, pkt, link):

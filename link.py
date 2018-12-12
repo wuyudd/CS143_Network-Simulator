@@ -1,3 +1,8 @@
+"""
+link.py maintains the Link class.
+Link has the function including add_packet_to_buffer, buffer_to_link, fetch_from_link
+so as to transmit the packets from one end of the link to the other.
+"""
 import collections
 import heapq
 import global_var
@@ -5,7 +10,6 @@ import global_consts
 import router
 import host
 from simulator import *
-from event import *
 import event_type
 
 

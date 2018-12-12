@@ -14,6 +14,9 @@ Current event types:
 """
 
 from simulator import *
+from event import *
+import global_consts
+import global_var
 import heapq
 
 

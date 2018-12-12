@@ -1,3 +1,6 @@
+"""
+gloabl_var.py maintains the global variables needed.
+"""
 # queue is a priority queue to store the event
 queue = []
 # timestamp is a timer globally

@@ -1,9 +1,10 @@
-import event_type
+"""
+this class create a event type, specific information is in event_type.py file
+all the classes in the event_type.py inherit from class Event.
+"""
 
-# this class create a event type, specific information is in event_type file
-# event_type class inherit from event
+
 class Event(object):
-
     def __init__(self):
         self.start_time = 0.0
 

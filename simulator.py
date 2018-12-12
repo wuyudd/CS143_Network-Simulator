@@ -1,3 +1,6 @@
+"""
+simulator.py is to build graph from the test case file and also read flows.
+"""
 from router import *
 from link import *
 from host import *
@@ -7,7 +10,6 @@ import heapq
 import event_type
 import global_var
 import global_consts
-
 
 
 class Simulator(object):
@@ -66,7 +68,7 @@ class Simulator(object):
                         new_event = event_type.CheckLinkRate(links, global_var.timestamp + global_consts.READLINKRATEFREQUENCY)
                         heapq.heappush(global_var.queue, new_event)
 
-        #for debug, output the number of packets lost for each link
+        # for debug, output the number of packets lost for each link
         for l in links.values():
             print(l.id+' lost_pkt: '+str(l.num_lost_pkt))
         return links, flows
@@ -78,7 +80,6 @@ class Simulator(object):
         nodes = {}
         links = {}
 
-        # print(data)
         # read host
         while i < len(data) and data[i] != '#':
             cur = data[i].split('\t')
@@ -100,12 +101,10 @@ class Simulator(object):
             links[cur[0] + '*'] = Link(cur[0] + '*', float(cur[1]), float(cur[2])*(10**-3), float(cur[3]), None, None)
             i += 1
         i += 1
-        #print(nodes)
         # read graph
         while i < len(data) and data[i] != '#':
             cur = data[i].split('\t')
             # specify the link from A to B
-            # print(cur)
             endA,endB = cur[1],cur[2]
             if endA[0] == 'H' and endB[0] == 'H':
                 nodes[endA].outgoing_links = links[cur[0]]
@@ -161,12 +160,10 @@ class Simulator(object):
     # This function read the txt file and construct the flows
     def read_flow(self, file_name, hosts):
         data = [line.strip('\n') for line in open(file_name, 'r')]
-        #print(data)
         flows = {}
         i = 0
         while i < len(data):
             cur = data[i].split('\t')
-            #print(cur)
             flows[cur[0]] = Flow(cur[0], hosts[cur[1]], hosts[cur[2]], float(cur[3]), float(cur[4]), global_consts.PACKETSIZE, cur[5])
             hosts[cur[1]].flows[cur[0]] = flows[cur[0]]
             i += 1

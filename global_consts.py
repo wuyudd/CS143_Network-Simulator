@@ -1,3 +1,6 @@
+"""
+global_consts.py maintains the global constants needed.
+"""
 # specifies the size for each class of packets
 # the size is in byte
 PACKETSIZE = float(1024)

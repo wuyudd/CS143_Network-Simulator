@@ -1,3 +1,8 @@
+"""
+router.py maintains the Router Class.
+Router has the functions including send, receive_packet
+and also say_hello, broadcast_routing_pkt, dijkstra and DFS for updating routing information.
+"""
 import collections
 import global_var
 import global_consts
@@ -37,7 +42,6 @@ class Router(Node):
                             if(curr_link.end != pkt.start):
                                 curr_pkt = Routing_Packet(pkt.id, "routing", global_consts.PACKETSIZE, self, curr_link.end, pkt.info)
                                 curr_link.add_packet_to_buffer(curr_pkt)
-
         elif type == "hello":
             # * means the link is a incoming link
             if link.id[-1] == '*':
@@ -65,7 +69,6 @@ class Router(Node):
             id = "ROUTINGINFO@P_" + str(global_var.period)+ "_" + self.id
             routing_pkt = Routing_Packet(id, "routing", global_consts.PACKETSIZE, self, curr_link.end, info)
             curr_link.add_packet_to_buffer(routing_pkt)
-
         # clear out_pkt_size for all links connected to this router
         for key in self.out_pkt_size.keys():
             self.out_pkt_size[key] = 0
@@ -75,7 +78,6 @@ class Router(Node):
         for curr_link in self.outgoing_links.values():
             hello_pkt = Packet("HelloFrom"+self.id, "hello", global_consts.ACKSIZE, self, curr_link.end)
             curr_link.add_packet_to_buffer(hello_pkt)
-
 
     def dijkstra(self):
         if global_var.period == 0:
@@ -90,15 +92,12 @@ class Router(Node):
                 unknow_dist.add(key[0])
             if key[1] not in known_dist:
                 unknow_dist.add(key[1])
-
         #run dijstra
-
         parent = {self.id: None}
         children = {}
         cur_node = self.id
         cur_dist = 0
         queue = []
-
         while unknow_dist:
             for s,e in self.routing_map.keys():
                 if s == cur_node and e not in known_dist:
@@ -111,7 +110,6 @@ class Router(Node):
                 children[cur_link[0]] = children.get(cur_link[0], []) + [cur_link[1]]
                 cur_node = cur_link[1]
                 cur_dist = cur_path_length
-
         routing_info = {}
         for child in children[self.id]:
             routing_info[child] = self.DFS(child, children)
