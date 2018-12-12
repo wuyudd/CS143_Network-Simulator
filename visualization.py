@@ -45,6 +45,7 @@ class Visualization(object):
         plt.ylabel('link_buffer_usgae/KB', fontsize=24)
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
+        plt.savefig('result_figures/' + self.graph_file_name.split('.')[0] + '_link_buffer_usage.png')
         plt.show()
 
     def plot_link_rate(self):
@@ -76,6 +77,7 @@ class Visualization(object):
         plt.ylabel('link_rate/Mbps', fontsize=24)
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
+        plt.savefig('result_figures/' + self.graph_file_name.split('.')[0] + '_link_rate.png')
         plt.show()
 
     def plot_flow_rate(self):
@@ -105,6 +107,7 @@ class Visualization(object):
         plt.ylabel('flow_rate/Mbps', fontsize=24)
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
+        plt.savefig('result_figures/' + self.graph_file_name.split('.')[0] + '_flow_rate.png')
         plt.show()
 
     def plot_window_size(self):
@@ -116,6 +119,7 @@ class Visualization(object):
         plt.ylabel('window_size/pkts', fontsize=24)
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
+        plt.savefig('result_figures/' + self.graph_file_name.split('.')[0] + '_window_size.png')
         plt.show()
 
     def plot_rtt(self):
@@ -127,6 +131,7 @@ class Visualization(object):
         plt.ylabel('RTT/s', fontsize=24)
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
+        plt.savefig('result_figures/' + self.graph_file_name.split('.')[0] + '_rtt.png')
         plt.show()
 
 
