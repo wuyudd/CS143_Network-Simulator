@@ -13,6 +13,7 @@ if __name__ == '__main__':
     vis.plot_link_rate()
     vis.plot_flow_rate()
     vis.plot_window_size()
+    vis.plot_part_window_size()
     vis.plot_rtt()
 
 

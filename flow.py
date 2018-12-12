@@ -59,8 +59,6 @@ class Flow(object):
         # for reno initialization
         # current state of reno, initial state is slow start
         self.curr_state = FlowState.SLOWSTART_INIT
-        # counter for duplicate ack
-        self.num_dup_acks = 1
         # window size
         self.window_size = 1
         # previous window size
