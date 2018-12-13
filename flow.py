@@ -81,7 +81,7 @@ class Flow(object):
         if tcp_name == 'FAST':
             self.curr_state = FlowState.CA
         # alpha for FAST
-        self.FAST_ALPHA = 15
+        self.FAST_ALPHA = 10
         # base round trip time
         self.FAST_BASE_RTT = -1
         # mark for update window size every other round trip time
@@ -145,6 +145,8 @@ class Flow(object):
         if self.finished:
             return
         if time == self.expected_timeout:
+
+            print(self.id + "-----------------------------------time out--------------------------")
             self.timeout_flag = True
             # retransmit last pkt immediately
             name = 'pkt' + self.last_ack.id.split('ack')[-1]
@@ -219,6 +221,16 @@ class Flow(object):
 
     # state machine for reno
     def choose_reno_next_state(self):
+        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+        print("Flow_id: " + self.id)
+        print("current state: " + self.curr_state)
+        print("current time: " + str(global_var.timestamp))
+        print("window size: " + str(self.window_size))
+        print("outstanding: " + str(self.num_on_flight_pkt))
+        print("last pkt: " + self.last_ack.id)
+        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
+
         # we need to change the state, window size, ss_threshold here
         if self.curr_state == FlowState.SLOWSTART_INIT:
             if self.timeout_flag or self.three_dup_flag:
@@ -278,7 +290,7 @@ class Flow(object):
                 # reminder: how to set timeout_flag
                 self.curr_state = FlowState.SLOWSTART
                 self.window_size = 1
-            elif self.window_size >= self.FAST_ALPHA - 7:
+            elif self.window_size >= self.FAST_ALPHA - 5:
                 self.curr_state = FlowState.CA
             else:
                 if self.fast_window_size_update_flag:
