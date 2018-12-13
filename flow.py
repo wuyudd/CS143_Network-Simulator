@@ -155,10 +155,13 @@ class Flow(object):
 
             if self.tcp_name == 'Reno':
                 self.choose_reno_next_state()
-                self.reno_action()
+                # self.reno_action()
+                if self.flow_send_pkt():
+                    self.set_new_timeout()
             elif self.tcp_name == 'FAST':
                 self.choose_fast_next_state()
-                self.fast_action()
+                if self.flow_send_pkt():
+                    self.set_new_timeout()
             elif self.tcp_name == 'None':
                 if self.flow_send_pkt():
                     self.set_new_timeout()
@@ -180,7 +183,7 @@ class Flow(object):
         self.check_three_dup(ack)
         self.choose_reno_next_state()
         self.update_num_pkt_on_flight(ack)
-        self.reno_action()
+        self.reno_action(ack)
         self.last_ack = ack
         return
 
@@ -214,8 +217,8 @@ class Flow(object):
         return
 
     # send next packets and set new time out event when window size is enough
-    def reno_action(self):
-        if self.flow_send_pkt():
+    def reno_action(self, ack):
+        if self.flow_send_pkt() and self.last_ack.id.split('ack')[-1] != ack.id.split('ack')[-1]:
             self.set_new_timeout()
         return
 
@@ -278,7 +281,7 @@ class Flow(object):
         self.check_three_dup(ack)
         self.choose_fast_next_state()
         self.update_num_pkt_on_flight(ack)
-        self.fast_action()
+        self.fast_action(ack)
         self.last_ack = ack
         return
 
@@ -290,7 +293,7 @@ class Flow(object):
                 # reminder: how to set timeout_flag
                 self.curr_state = FlowState.SLOWSTART
                 self.window_size = 1
-            elif self.window_size >= self.FAST_ALPHA - 5:
+            elif self.window_size >= self.FAST_ALPHA - 7:
                 self.curr_state = FlowState.CA
             else:
                 if self.fast_window_size_update_flag:
@@ -323,8 +326,8 @@ class Flow(object):
         return
 
     # send next packets and set new time out event when window size is enough
-    def fast_action(self):
-        if self.flow_send_pkt():
+    def fast_action(self, ack):
+        if self.flow_send_pkt() and self.last_ack.id.split('ack')[-1] != ack.id.split('ack')[-1]:
             self.set_new_timeout()
         return
 
