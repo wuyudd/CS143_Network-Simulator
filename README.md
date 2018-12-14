@@ -8,8 +8,8 @@ Test cases from official websites (http://courses.cms.caltech.edu/cs143/Project/
 
 How to run our codes:
   If you use an IDE:
-    Just run main.py. Done! :)
-  If you use command line: (under the directory of CS143_Network-Simulator, -t chooses the testX.txt, -f chooses flowsX.txt)
+    Just run main.py. Done! :)\n
+  If you use command line: (under the directory of CS143_Network-Simulator, -t chooses the testX.txt, -f chooses flowsX.txt)\n
     python3 ./main.py -t test2.txt -f flows2.txt
 
 # End of README.md
