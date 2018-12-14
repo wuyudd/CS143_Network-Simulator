@@ -24,5 +24,9 @@ How to run our codes:
   
     python3 ./main.py -t test2.txt -f flows2.txt  
     
+If you want to choose TCP algorithms, please modify the rightmost column of flowsX.txt.   
+e.g.  
 
+  F1	H1	H2	20971520	1.0	FAST  
+  
 # End of README.md
