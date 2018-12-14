@@ -13,7 +13,7 @@ import global_consts
 
 
 class Simulator(object):
-    def __init__(self):
+    def __init__(self, options):
         # they are the main component of simulations
         # nodes is a map which contains each node: key is the name of host/router and value is the instance of host/router
         self.nodes = {}
@@ -22,14 +22,17 @@ class Simulator(object):
         # links is a map which contains each flow: key is the name of flow and value is the instance of flow
         self.flows = {}
     # simulation takes in the graph_file(network structure) and flow_file(flows information)
+        self.graph_file_name = options['filename_test']
+        self.flow_file_name = options['filename_flow']
 
-    def run(self, graph_file_name, flow_file_name):
+    def run(self):
+    #def run(self, graph_file_name, flow_file_name):
         # from the graph file, call build_graph function to reconstruct the network structure
-        routers, hosts, links = self.build_graph(graph_file_name)
+        routers, hosts, links = self.build_graph(self.graph_file_name)
         # for debug purpose, shows full layout of the newtwork structure
         self.display_graph(routers, hosts, links)
         # from flows file, call read_flow to build flow instances
-        flows = self.read_flow(flow_file_name, hosts)
+        flows = self.read_flow(self.flow_file_name, hosts)
 
         # initialization of the routers, let each router knows its neighbors
         event = event_type.SayHello(routers, hosts, -3)
