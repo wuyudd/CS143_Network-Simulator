@@ -1,10 +1,8 @@
 """
 gloabl_var.py maintains the global variables needed.
 """
-# queue is a priority queue to store the event
-queue = []
-# timestamp is a timer globally
-timestamp = float(0.0)
+queue = [] # queue is a priority queue to store the event
+timestamp = float(0.0) # timestamp is a timer globally
 # period is used for update the routing information
 # in each period, each router will only accept the routing information sent from other routers in current period
 period = 0

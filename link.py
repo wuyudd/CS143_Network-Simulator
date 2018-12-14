@@ -18,40 +18,27 @@ class Link(object):
         # link delay is in second
         # input link rate is in Mbps
         # input buffer_size is in KByte
-        # link id is a string
-        self.id = id
-        # the current size of buffer is in byte
-        self.cur_size = 0.0
-        # the maximum size of buffer is in byte
-        self.max_size = buffer_size*1024
+
+        self.id = id # link id is a string
+        self.cur_size = 0.0 # the current size of buffer is in byte
+        self.max_size = buffer_size*1024 # the maximum size of buffer is in byte
         # the link_lock is set to True when link is pushing packet from buffer to link
         # the link_lock is set to False when link is idle (not pushing packet from buffer to link)
         self.link_lock = False
-        # buffer is a double ended queue to store the packet waiting for sending
-        self.buffer = collections.deque()
-        # on_the_link is a double ended queue to store the packet on the link (the packet is waiting for propagation delay)
-        self.on_the_link = collections.deque()
-        # link_rate specifie the link rate for this link
-        self.link_rate = link_rate
-        # link_delay specifies the propagation delay for this link
-        self.link_delay = link_delay
-        # start specifies the start node of this link(a host or a router)
-        self.start = start
-        # start specifies the end node of this link(a host or a router)
+        self.buffer = collections.deque() # buffer is a double ended queue to store the packet waiting for sending
+        self.on_the_link = collections.deque() # on_the_link is a double ended queue to store the packet on the link (the packet is waiting for propagation delay)
+        self.link_rate = link_rate # link_rate specifies the link rate for this link
+        self.link_delay = link_delay # link_delay specifies the propagation delay for this link
+        self.start = start # start specifies the start node of this link(a host or a router)
         self.end = end
 
         # for visualization purpose
-        #  plot_link_buffer_time specifies the time axis for buffer
-        self.plot_link_buffer_time = []
-        # plot_link_buffer specifies the buffer size for whole process
-        self.plot_link_buffer = []
-        # plot_link_rate specifies the link rate for whole process
-        self.plot_link_rate = []
-        # plot_link_rate_size specify the the size of packets sent in a certain interval
-        # reset to 0 when one interval passes
-        self.plot_link_rate_size = 0.0
-        # used for debug, num_lost_pkt record the packets lost for each links
-        self.num_lost_pkt = 0.0
+
+        self.plot_link_buffer_time = [] #  plot_link_buffer_time specifies the time axis for buffer
+        self.plot_link_buffer = [] # plot_link_buffer specifies the buffer size for whole process
+        self.plot_link_rate = [] # plot_link_rate specifies the link rate for whole process
+        self.plot_link_rate_size = 0.0 # plot_link_rate_size specify the the size of packets sent in a certain interval, reset to 0 when one interval passes
+        self.num_lost_pkt = 0.0 # used for debug, num_lost_pkt record the packets lost for each links
 
     def __lt__(self, other):
         return self.id < other.id
@@ -62,23 +49,19 @@ class Link(object):
             self.start.out_pkt_size[self.id] += pkt.size
         # drop tail algorithms
         if self.cur_size + pkt.size <= self.max_size:
-            # add packet to buffer
-            self.buffer.append(pkt)
+            self.buffer.append(pkt) # add packet to buffer
             self.cur_size += pkt.size
-            # for visualization purpose
+            # for plot purpose
             self.plot_link_buffer_time.append(global_var.timestamp)
             self.plot_link_buffer.append(self.cur_size/1024)
-            # if link is idle, send the newly added packet immediately
-            if self.link_lock == False:
+            if self.link_lock == False: # if link is idle, send the newly added packet immediately
                 # create an event that specifies the time when this packet can move from buffer to on_the_link
                 expected_waiting_time = pkt.size*8/(self.link_rate*1024*1024)
                 cur_event = event_type.FetchFromBuffer(self, global_var.timestamp + expected_waiting_time)
                 heapq.heappush(global_var.queue, cur_event)
-                # link is not idle now
-                self.link_lock = True
+                self.link_lock = True # link is not idle now
         else:
-            # for debug purpose, lost one more packet on this link
-            self.num_lost_pkt += 1
+            self.num_lost_pkt += 1 # for debug purpose, lost one more packet on this link
 
     # after pushing packet from buffer to link, packet will move from buffer to on_the_link
     def buffer_to_link(self):
@@ -94,11 +77,9 @@ class Link(object):
             expected_waiting_time = self.buffer[0].size * 8 / (self.link_rate * 1024 * 1024)
             cur_event = event_type.FetchFromBuffer(self, global_var.timestamp + expected_waiting_time)
             heapq.heappush(global_var.queue, cur_event)
-            # link is not idle
-            self.link_lock = True
+            self.link_lock = True # link is not idle
         else:
-            # if buffer is empty, then the link will be idle
-            self.link_lock = False
+            self.link_lock = False # if buffer is empty, then the link will be idle
 
         # for plot purpose
         self.plot_link_buffer_time.append(global_var.timestamp)
@@ -108,5 +89,4 @@ class Link(object):
     # after the propagation delay, packets can move from on_the_link to destination
     def fetch_from_link(self):
         cur_pkt = self.on_the_link.popleft()
-        # call destination to receive the packets
-        self.end.receive_packet(cur_pkt, self)
+        self.end.receive_packet(cur_pkt, self) # call destination to receive the packets

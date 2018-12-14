@@ -5,16 +5,12 @@ for every packet object, it has the attributes of id(IP address), type, size, st
 class Packet(object):
     def __init__(self, id, type, size, start, end):
         self.id = id
-        # three types of packet: data, data_ack, hello
-        self.type = type
+        self.type = type # three types of packet: data, data_ack, hello
         self.size = size
-        # host object
-        self.start = start
-        # host object
-        self.end = end
+        self.start = start # host object
+        self.end = end # host object
         self.ack = 0
-        # data_ack's sending time is the sending time of it's corresponding data packet
-        self.sending_time = 0.0
+        self.sending_time = 0.0  # data_ack's sending time is the sending time of it's corresponding data packet
 
     def getID(self):
         return self.id

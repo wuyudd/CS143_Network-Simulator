@@ -15,13 +15,11 @@ import global_consts
 class Simulator(object):
     def __init__(self, options):
         # they are the main component of simulations
-        # nodes is a map which contains each node: key is the name of host/router and value is the instance of host/router
-        self.nodes = {}
-        # links is a map which contains each link: key is the name of link and value is the instance of host/router
-        self.links = {}
-        # links is a map which contains each flow: key is the name of flow and value is the instance of flow
-        self.flows = {}
-    # simulation takes in the graph_file(network structure) and flow_file(flows information)
+
+        self.nodes = {} # nodes is a map which contains each node: key is the name of host/router and value is the instance of host/router
+        self.links = {} # links is a map which contains each link: key is the name of link and value is the instance of host/router
+        self.flows = {} # flows is a map which contains each flow: key is the name of flow and value is the instance of flow
+        # simulation takes in the graph_file(network structure) and flow_file(flows information)
         self.graph_file_name = options['filename_test']
         self.flow_file_name = options['filename_flow']
 

@@ -16,8 +16,7 @@ class Host(Node):
         self.neighbors = {} # key is the neighbor node, value is the outgoing_links
         self.flow_lost_pkt_pointer = {} # key is the corresponding flow, value is the first 0's position(this position's pkt has not been acknowleged) in the received_pkts_data list
         self.send_flag = 0
-        #self.received_pkts_data = [] # a list to record whether a pkt is received, 0: not received, 1: received
-        self.received_pkts_data = {}
+        self.received_pkts_data = {} #self.received_pkts_data = [] # a list to record whether a pkt is received, 0: not received, 1: received
 
     def send_packet(self, to_send_pkt):
         flow_id = to_send_pkt.id.split('pkt')[0]

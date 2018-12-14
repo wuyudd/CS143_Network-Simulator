@@ -32,8 +32,7 @@ class Router(Node):
             # update routing information
             if global_var.updating_flag == True:
                 s = pkt.id.split("_")
-                # s[1] is which updating_routing_information period this pkt is in
-                if(int(s[1]) == global_var.period):
+                if(int(s[1]) == global_var.period): # s[1] is which updating_routing_information period this pkt is in
                     if s[2] not in self.routing_pkt_pool:
                         self.routing_pkt_pool.add(s[2])
                         for key in pkt.info.keys():
@@ -43,8 +42,7 @@ class Router(Node):
                                 curr_pkt = Routing_Packet(pkt.id, "routing", global_consts.PACKETSIZE, self, curr_link.end, pkt.info)
                                 curr_link.add_packet_to_buffer(curr_pkt)
         elif type == "hello":
-            # * means the link is a incoming link
-            if link.id[-1] == '*':
+            if link.id[-1] == '*': # * means the link is a incoming link
                 self.neighbors[link.start.id] = self.outgoing_links[link.id[:len(link.id)-1]]
                 self.out_pkt_size[link.id[:len(link.id)-1]] = 0
             else:
