@@ -1,6 +1,6 @@
 # CS143_Network-Simulator
 
-// Created and Modified by Yu Wu.
+<b> Created and Modified by Yu Wu. </b>
 
 Course project of CS143_Network-Simulator, Caltech, 2018 Fall.  
 
