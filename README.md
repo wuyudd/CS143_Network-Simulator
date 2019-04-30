@@ -1,4 +1,7 @@
 # CS143_Network-Simulator
+
+// Created and Modified by Yu Wu.
+
 Course project of CS143_Network-Simulator, Caltech, 2018 Fall.  
 
 Group member: Wen Gu, Feng Jiang, Sha Sha, Yu Wu.
